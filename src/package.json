@@ -1,0 +1,58 @@
+{
+  "name": "mojaloop-payment-manager-management-api-service",
+  "version": "1.0.0",
+  "description": "Part of Payment Manager, supports data for UI screens",
+  "main": "index.js",
+  "author": "Murthy kakarlamudi, ModusBox Inc.",
+  "contributors": [
+    "Murthy Kakarlamudi <murthy@modusbox.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/modusintegration/mojaloop-payment-manager-management-api-service.git"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "jest --ci --reporters=default --reporters=jest-junit --env=node test/unit",
+    "test:int": "jest --ci --reporters=default --reporters=jest-junit --env=node test/integration --forceExit"
+  },
+  "dependencies": {
+    "@internal/cache": "file:lib/cache",
+    "@internal/log": "file:lib/log",
+    "@internal/model": "file:lib/model",
+    "@internal/randomphrase": "file:lib/randomphrase",
+    "@internal/requests": "file:lib/model/lib/requests",
+    "@internal/router": "file:lib/router",
+    "@internal/shared": "file:lib/model/lib/shared",
+    "@internal/validate": "file:lib/validate",
+    "@mojaloop/sdk-standard-components": "^10.2.2",
+    "ajv": "^6.12.2",
+    "co-body": "^6.0.0",
+    "dotenv": "^8.2.0",
+    "env-var": "^6.1.1",
+    "js-yaml": "^3.13.1",
+    "koa": "^2.11.0",
+    "koa-body": "^4.1.1",
+    "koa2-oauth-server": "^1.0.0",
+    "node-fetch": "^2.6.0",
+    "uuidv4": "^6.0.8"
+  },
+  "devDependencies": {
+    "@types/jest": "^25.2.1",
+    "eslint": "^7.0.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.2",
+    "jest": "^26.0.1",
+    "jest-junit": "^10.0.0",
+    "nock": "^12.0.3",
+    "openapi-response-validator": "^4.0.0",
+    "redis-mock": "^0.49.0",
+    "supertest": "^4.0.2"
+  }
+}

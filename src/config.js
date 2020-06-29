@@ -1,0 +1,35 @@
+/**************************************************************************
+ *  (C) Copyright ModusBox Inc. 2019 - All rights reserved.               *
+ *                                                                        *
+ *  This file is made available under the terms of the license agreement  *
+ *  specified in the corresponding source code repository.                *
+ *                                                                        *
+ *  ORIGINAL AUTHOR:                                                      *
+ *       Murthy Kakarlamudi - murthy@modusbox.com                         *
+ **************************************************************************/
+'use strict';
+
+const fs = require('fs');
+require('dotenv').config();
+const { from } = require('env-var');
+const yaml = require('js-yaml');
+
+function getFileContent(path) {
+    if (!fs.existsSync(path)) {
+        throw new Error('File doesn\'t exist');
+    }
+    return fs.readFileSync(path);
+}
+
+const env = from(process.env, {
+    asFileContent: (path) => getFileContent(path),
+    asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
+    asYamlConfig: (path) => yaml.load(getFileContent(path)),
+});
+
+module.exports = {
+    inboundPort: env.get('INBOUND_LISTEN_PORT').default('4000').asPortNumber(),
+    outboundPort: env.get('OUTBOUND_LISTEN_PORT').default('4001').asPortNumber(),
+    logIndent: env.get('LOG_INDENT').default('2').asIntPositive()
+    
+};
