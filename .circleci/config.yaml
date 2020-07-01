@@ -1,0 +1,67 @@
+version: "2.1"
+orbs:
+  docker: circleci/docker@0.5.13
+  slack: circleci/slack@3.4.2
+
+jobs:
+  lint-test:
+    working_directory: ~/src
+    docker:
+      - image: circleci/node:latest 
+      
+    steps:
+      - checkout
+      - run:
+          name: Update npm
+          command: 'sudo npm install -g npm@latest'
+      - run:
+          name: Install npm dependencies
+          command: npm ci
+      - run:
+          name: Run lint
+          command: 'npm run lint'
+      - run:
+          name: Run unit tests
+          command: 'npm test'
+      - run:
+          name: Run unit tests with coverage
+          command: 'npm run test-with-coverage'
+      - store_artifacts:
+          path: coverage/
+      - slack/notify:
+          color: '#42e2f4'
+          message: Test coverage report for $CIRCLE_PROJECT_REPONAME branch $CIRCLE_BRANCH <https://$CIRCLE_BUILD_NUM-225634193-gh.circle-artifacts.com/0/coverage/index.html|here>
+          webhook: $SLACK_WEBHOOK
+
+workflows:
+  test-build-and-publish-docker-image:
+    jobs:
+      - lint-test:
+          filters:
+            tags:
+              only: /.*/
+      - docker/publish:
+          requires:
+            - lint-test
+          before_build:
+            - run:
+                name: set image tag
+                command: |
+                  if [[ -v CIRCLE_TAG ]]; then
+                    echo 'export IMAGE_TAG=$(echo $CIRCLE_TAG | tr -d v)' >> $BASH_ENV
+                  else
+                    echo 'export IMAGE_TAG=$CIRCLE_BRANCH' >> $BASH_ENV
+                  fi
+          lint-dockerfile: true
+          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          tag: $IMAGE_TAG
+          registry: $DOCKER_REGISTRY
+          docker-username: DOCKER_USER
+          docker-password: DOCKER_PASSWORD
+          extra_build_args: "--build-arg MBX_CURRENT_COMMIT=$(git rev-parse HEAD) --build-arg GITHUB_PACKAGES_TOKEN=$GITHUB_PACKAGES_TOKEN"
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore:
+                - master
