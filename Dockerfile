@@ -4,7 +4,7 @@ RUN apk add --no-cache git python build-base
 
 EXPOSE 3000
 
-WORKDIR /src/
+WORKDIR ~/src/
 
 # This is super-ugly, but it means we don't have to re-run npm install every time any of the source
 # files change- only when any dependencies change- which is a superior developer experience when
