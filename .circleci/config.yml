@@ -7,7 +7,6 @@ version: 2.1
 # Orbs used in this pipeline
 ###
 orbs:
-  anchore: anchore/anchore-engine@1.6.0
   slack: circleci/slack@3.4.2
 
 ##
