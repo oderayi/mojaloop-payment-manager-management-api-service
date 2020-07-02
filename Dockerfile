@@ -36,6 +36,5 @@ LABEL org.label-schema.version=$VERSION
 COPY --from=builder /src/ /src
 RUN npm prune --production
 COPY ./src ./src
-COPY ./secrets /
 
 CMD ["node", "src/index.js"]
