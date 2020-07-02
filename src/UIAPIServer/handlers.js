@@ -16,7 +16,7 @@ const Model = require('@internal/model').UIAPIServerModel;
 
 const healthCheck = async(ctx) => {
     ctx.response.status = 200;
-    ctx.response.body = '';
+    ctx.response.body = JSON.stringify({'status':'ok'});
 };
 
 

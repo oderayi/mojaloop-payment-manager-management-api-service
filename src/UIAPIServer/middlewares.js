@@ -12,7 +12,7 @@ const util = require('util');
 const coBody = require('co-body');
 
 const randomPhrase = require('@internal/randomphrase');
-const { Jws, Errors } = require('@mojaloop/sdk-standard-components');
+const { Errors } = require('@mojaloop/sdk-standard-components');
 
 /**
  * Log raw to console as a last resort
@@ -37,98 +37,15 @@ const createRequestIdGenerator = () => async (ctx, next) => {
     await next();
 };
 
-
-/**
- * Deal with mojaloop API content type headers, treat as JSON
- * @param logger
- * @return {Function}
- */
-//
-const createHeaderValidator = (logger) => async (ctx, next) => {
-    const validHeaders = new Set([
-        'application/vnd.interoperability.parties+json;version=1.0',
-        'application/vnd.interoperability.participants+json;version=1.0',
-        'application/vnd.interoperability.quotes+json;version=1.0',
-        'application/vnd.interoperability.transactionRequests+json;version=1.0',
-        'application/vnd.interoperability.transfers+json;version=1.0',
-        'application/vnd.interoperability.authorizations+json;version=1.0',
-        'application/json'
-    ]);
-    if (validHeaders.has(ctx.request.headers['content-type'])) {
-        try {
-            ctx.request.body = await coBody.json(ctx.req);
-        }
-        catch(err) {
-            // error parsing body
-            logger.push({ err }).log('Error parsing body');
-            ctx.response.status = 400;
-            ctx.response.body = new Errors.MojaloopFSPIOPError(err, err.message, null,
-                Errors.MojaloopApiErrorCodes.MALFORMED_SYNTAX).toApiErrorObject();
-            return;
-        }
-    }
-    await next();
-};
-
-
-/**
- *
- * @param logger
- * @param keys {Object}  JWS verification keys
- * @param exclusions {string[]} Requests to exclude from validation. Possible values: "putParties"
- * @return {Function}
- */
-const createJwsValidator = (logger, keys, exclusions) => {
-    const jwsValidator = new Jws.validator({
-        logger: logger,
-        validationKeys: keys,
-    });
-    // JWS validation for incoming requests
-    return async (ctx, next) => {
-        try {
-            // we skip inbound JWS validation on PUT /parties requests if our config flag
-            // is set to do so.
-            if (exclusions.includes('putParties')
-                    && ctx.request.method === 'PUT'
-                    && ctx.request.path.startsWith('/parties/')) {
-                logger.log('Skipping jws validation on put parties. config flag is set');
-                return await next();
-            }
-
-            // we dont check signatures on GET requests
-            // todo: validate this requirement. No state is mutated by GETs but
-            // there are potential security issues if message origin is used to
-            // determine permission sets i.e. what is "readable"
-            if(ctx.request.method !== 'GET') {
-                logger.push({ request: ctx.request, body: ctx.request.body }).log('Validating JWS');
-                jwsValidator.validate(ctx.request, logger);
-            }
-
-        }
-        catch(err) {
-            logger.push({ err }).log('Inbound request failed JWS validation');
-
-            ctx.response.status = 400;
-            ctx.response.body = new Errors.MojaloopFSPIOPError(
-                err, err.message, null, Errors.MojaloopApiErrorCodes.INVALID_SIGNATURE
-            ).toApiErrorObject();
-            return;
-        }
-        await next();
-    };
-};
-
-
 /**
  * Add a log context for each request, log the receipt and handling thereof
  * @param logger
  * @param sharedState
  * @return {Function}
  */
-const createLogger = (logger, sharedState) => async (ctx, next) => {
+const createLogger = (logger) => async (ctx, next) => {
     ctx.state = {
-        ...ctx.state,
-        ...sharedState,
+        ...ctx.state
     };
     ctx.state.logger = logger.push({ request: {
         id: ctx.request.id,
@@ -197,8 +114,6 @@ const createResponseBodyHandler = () => async (ctx, next) => {
 module.exports = {
     createErrorHandler,
     createRequestIdGenerator,
-    createHeaderValidator,
-    createJwsValidator,
     createLogger,
     createRequestValidator,
     createResponseBodyHandler,

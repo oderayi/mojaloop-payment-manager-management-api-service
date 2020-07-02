@@ -11,11 +11,8 @@
 'use strict';
 
 const config = require('./config');
-const UIAPIServer = require('./UIAPIIServer');
-
-// import things we want to expose e.g. for unit tests and users who dont want to use the entire
-// scheme adapter as a service
-const UIAPIServerMiddleware = require('./UIAPItboundServer/middlewares.js');
+const UIAPIServer = require('./UIAPIServer');
+const UIAPIServerMiddleware = require('./UIAPIServer/middlewares.js');
 const Router = require('@internal/router');
 const Validate = require('@internal/validate');
 const RandomPhrase = require('@internal/randomphrase');
@@ -82,6 +79,5 @@ module.exports = {
     Router: Router,
     Validate: Validate,
     RandomPhrase: RandomPhrase,
-    Log: Log,
-    Cache: Cache
+    Log: Log
 };

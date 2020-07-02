@@ -10,10 +10,7 @@ WORKDIR /src/
 # files change- only when any dependencies change- which is a superior developer experience when
 # relying on docker-compose.
 COPY ./src/package.json ./package.json
-COPY ./src/lib/cache/package.json ./lib/cache/package.json
 COPY ./src/lib/log/package.json ./lib/log/package.json
-COPY ./src/lib/model/lib/requests/package.json ./lib/model/lib/requests/package.json
-COPY ./src/lib/model/lib/shared/package.json ./lib/model/lib/shared/package.json
 COPY ./src/lib/model/package.json ./lib/model/package.json
 COPY ./src/lib/randomphrase/package.json ./lib/randomphrase/package.json
 COPY ./src/lib/router/package.json ./lib/router/package.json
@@ -29,7 +26,7 @@ ARG VERSION
 
 # See http://label-schema.org/rc1/ for label schema info
 LABEL org.label-schema.schema-version="1.0"
-LABEL org.label-schema.name="sdk-scheme-adapter"
+LABEL org.label-schema.name="mojaloop-payment-manager-management-api-service"
 LABEL org.label-schema.build-date=$BUILD_DATE
 LABEL org.label-schema.vcs-url=$VCS_URL
 LABEL org.label-schema.vcs-ref=$VCS_REF

@@ -23,13 +23,10 @@
     "test:int": "jest --ci --reporters=default --reporters=jest-junit --env=node test/integration --forceExit"
   },
   "dependencies": {
-    "@internal/cache": "file:lib/cache",
     "@internal/log": "file:lib/log",
     "@internal/model": "file:lib/model",
     "@internal/randomphrase": "file:lib/randomphrase",
-    "@internal/requests": "file:lib/model/lib/requests",
     "@internal/router": "file:lib/router",
-    "@internal/shared": "file:lib/model/lib/shared",
     "@internal/validate": "file:lib/validate",
     "@mojaloop/sdk-standard-components": "^10.2.2",
     "ajv": "^6.12.2",

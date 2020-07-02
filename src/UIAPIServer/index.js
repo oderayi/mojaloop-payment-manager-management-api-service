@@ -40,10 +40,10 @@ class UIAPIServer {
         await validator.initialise(apiSpecs);
 
         this._api.use(middlewares.createErrorHandler());
-        this._api.use(middlewares.createLogger(this._logger, sharedState));
+        this._api.use(middlewares.createLogger(this._logger));
         this._api.use(middlewares.createRequestValidator(validator));
         this._api.use(router(handlers));
-        this._api.use(koaBody());
+        this._api.use(middlewares.createResponseBodyHandler());
 
         this._server = this._createServer();
         return this._server;
@@ -81,4 +81,4 @@ class UIAPIServer {
 
 }
 
-module.exports = InboundServer;
+module.exports = UIAPIServer;

@@ -29,7 +29,6 @@ const env = from(process.env, {
 
 module.exports = {
     inboundPort: env.get('INBOUND_LISTEN_PORT').default('4000').asPortNumber(),
-    outboundPort: env.get('OUTBOUND_LISTEN_PORT').default('4001').asPortNumber(),
     logIndent: env.get('LOG_INDENT').default('2').asIntPositive()
     
 };
