@@ -33,8 +33,8 @@ LABEL org.label-schema.vcs-ref=$VCS_REF
 LABEL org.label-schema.url="https://mojaloop.io/"
 LABEL org.label-schema.version=$VERSION
 
-COPY --from=builder /src/ /src
+COPY --from=builder /src/ ~/src
 RUN npm prune --production
-COPY ./src ./src
+COPY ./src ~/src
 
 CMD ["node", "src/index.js"]
