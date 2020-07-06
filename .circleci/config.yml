@@ -332,20 +332,20 @@ workflows:
       #         ignore:
       #           - /feature*/
       #           - /bugfix*/
-      - build:
-          context: wmt
-          requires:
-            - setup
-            - test-unit
-            # - test-integration
-            - lint
-            # - audit-licenses
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
-            branches:
-              ignore:
-                - /.*/
+      # - build:
+      #     context: wmt
+      #     requires:
+      #       - setup
+      #       - test-unit
+      #       # - test-integration
+      #       - lint
+      #       # - audit-licenses
+      #     filters:
+      #       tags:
+      #         only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
+      #       branches:
+      #         ignore:
+      #           - /.*/
       # - license-scan:
       #     context: wmt
       #     requires:
@@ -367,14 +367,40 @@ workflows:
       #       branches:
       #         ignore:
       #           - /.*/
-      - publish:
-          context: wmt
+      # - publish:
+      #     context: wmt
+      #     requires:
+      #       # - license-scan
+      #       - build
+      #     filters:
+      #       tags:
+      #         only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
+      #       branches:
+      #         ignore:
+      #           - /.*/
+      - docker/publish:
           requires:
-            # - license-scan
-            - build
+            - test-unit
+            - lint
+          before_build:
+            - run:
+                name: set image tag
+                command: |
+                  if [[ -v CIRCLE_TAG ]]; then
+                    echo 'export IMAGE_TAG=$(echo $CIRCLE_TAG | tr -d v)' >> $BASH_ENV
+                  else
+                    echo 'export IMAGE_TAG=$CIRCLE_BRANCH' >> $BASH_ENV
+                  fi
+          lint-dockerfile: true
+          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          tag: $IMAGE_TAG
+          registry: $DOCKER_REGISTRY
+          docker-username: DOCKER_USER
+          docker-password: DOCKER_PASSWORD
+          extra_build_args: "--build-arg MBX_CURRENT_COMMIT=$(git rev-parse HEAD) --build-arg GITHUB_PACKAGES_TOKEN=$GITHUB_PACKAGES_TOKEN"
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
             branches:
               ignore:
-                - /.*/
+                - master
