@@ -169,10 +169,10 @@ jobs:
           name: Build Docker $CIRCLE_TAG image
           command: |
             echo "Building Docker image: $CIRCLE_TAG"
-            docker build -t $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG .
+            docker build -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG .
       - run:
           name: Save docker image to workspace
-          command: docker save -o /tmp/docker-image.tar $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
+          command: docker save -o /tmp/docker-image.tar $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
       - persist_to_workspace:
           root: /tmp
           paths:
@@ -190,7 +190,7 @@ jobs:
           <<: *defaults_license_scanner
       - run:
           name: Run the license-scanner
-          command: cd /tmp/license-scanner && mode=docker dockerImages=$DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG make run
+          command: cd /tmp/license-scanner && mode=docker dockerImages=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG make run
       - store_artifacts:
           path: /tmp/license-scanner/results
           prefix: licenses
@@ -259,18 +259,18 @@ jobs:
           command: docker load -i /tmp/docker-image.tar
       - run:
           name: Login to Docker Hub
-          command: docker login -u $DOCKER_USER -p $DOCKER_PASS
+          command: docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
       - run:
           name: Re-tag pre built image
           command: |
-            docker tag $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
+            docker tag $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
       - run:
           name: Publish Docker image $CIRCLE_TAG & Latest tag to Docker Hub
           command: |
-            echo "Publishing $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG"
-            docker push $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
-            echo "Publishing $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG"
-            docker push $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
+            echo "Publishing $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG"
+            docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
+            echo "Publishing $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG"
+            docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
       - slack/status:
           webhook: "$SLACK_WEBHOOK_ANNOUNCEMENT"
           success_message: '*"${CIRCLE_PROJECT_REPONAME}"* - Release \`"${CIRCLE_TAG}"\` \nhttps://github.com/modusintegration/"${CIRCLE_PROJECT_REPONAME}"/releases/tag/"${CIRCLE_TAG}"'
