@@ -10,8 +10,7 @@
 
 'use strict';
 
-const util = require('util');
-const Model = require('@internal/model').UIAPIServerModel;
+// const Model = require('@internal/model').UIAPIServerModel;
 
 
 const healthCheck = async(ctx) => {

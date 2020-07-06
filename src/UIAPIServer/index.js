@@ -10,7 +10,6 @@
 
 const Koa = require('koa');
 
-const https = require('https');
 const http = require('http');
 const yaml = require('js-yaml');
 const fs = require('fs');

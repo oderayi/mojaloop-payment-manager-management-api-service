@@ -9,7 +9,6 @@
  **************************************************************************/
 
 const util = require('util');
-const coBody = require('co-body');
 
 const randomPhrase = require('@internal/randomphrase');
 const { Errors } = require('@mojaloop/sdk-standard-components');
