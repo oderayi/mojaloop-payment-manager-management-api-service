@@ -5,7 +5,7 @@
  *  specified in the corresponding source code repository.                *
  *                                                                        *
  *  ORIGINAL AUTHOR:                                                      *
- *       James Bush - james.bush@modusbox.com                             *
+ *       Murthy Kakarlamudi - murthy@modusbox.com                         *
  **************************************************************************/
 
 const Koa = require('koa');
