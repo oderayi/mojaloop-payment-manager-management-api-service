@@ -32,8 +32,8 @@ workflows:
       #       tags:
       #         only: /.*/
       - docker/publish:
-          requires:
-            - test
+          # requires:
+          #   - test
           before_build:
             - run:
                 name: set image tag
