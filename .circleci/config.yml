@@ -53,7 +53,7 @@ workflows:
           extra_build_args: "--build-arg GITHUB_PACKAGES_TOKEN=$GITHUB_PACKAGES_TOKEN"
           filters:
             tags:
-              only: /^v.*/
+              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
             branches:
               ignore:
                 - master
