@@ -6,7 +6,7 @@ paths:
   /health:
     get:
       summary: Health check endpoint
-      description: This endpoint allows a user of the SDK scheme adapter to check the outbound transfers service is listening.
+      description: This endpoint checks the health of the endpoint.
       tags:
         - Health
       responses:
