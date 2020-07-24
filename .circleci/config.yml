@@ -143,6 +143,9 @@ jobs:
           command: cd src && (npm run lint > /lintresults/results.txt)
       - store_artifacts:
           path: /lintresults
+      - slack/status:
+          fail_only: true
+          message: '*"${CIRCLE_PROJECT_REPONAME}"* - Release \`"${CIRCLE_TAG}"\` \nhttps://github.com/modusintegration/"${CIRCLE_PROJECT_REPONAME}"/releases/tag/"${CIRCLE_TAG}"'
 
   audit-licenses:
     executor: default-docker
@@ -274,7 +277,7 @@ jobs:
             # echo "Publishing $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG"
             # docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
       - slack/status:
-          webhook: "$SLACK_WEBHOOK_ANNOUNCEMENT"
+          # webhook: "$SLACK_WEBHOOK_ANNOUNCEMENT"
           success_message: '*"${CIRCLE_PROJECT_REPONAME}"* - Release \`"${CIRCLE_TAG}"\` \nhttps://github.com/modusintegration/"${CIRCLE_PROJECT_REPONAME}"/releases/tag/"${CIRCLE_TAG}"'
 
 workflows:
