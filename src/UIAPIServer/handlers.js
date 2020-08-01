@@ -11,6 +11,10 @@
 'use strict';
 
 // const Model = require('@internal/model').UIAPIServerModel;
+const {
+    Balances,
+} = require('@internal/model');
+const config = require('./config');
 
 
 const healthCheck = async(ctx) => {
@@ -18,9 +22,20 @@ const healthCheck = async(ctx) => {
     ctx.response.body = JSON.stringify({'status':'ok'});
 };
 
+const getBalances = async(ctx) => {
+    const balances = new Balances({
+        config: config
+    });
+    ctx.response.status = 200;
+    ctx.response.body = balances.findBalances(ctx.request.url, ctx.request.headers, ctx.request.query);
+};
+
 
 module.exports = {
     '/health': {
         get: healthCheck
+    },
+    '/balances': {
+        get: getBalances,
     }
 };

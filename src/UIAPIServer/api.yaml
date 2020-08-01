@@ -72,6 +72,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/Transfer'
 
+  /balances:
+    get:
+      summary: 'Retrieves position, reserved, committed balances for a given time-period '
+      operationId: findBalances
+      parameters:
+        - in: query
+          name: startTimestamp
+          required: false
+          schema:
+            $ref: "#/components/schemas/Timestamp"
+        - in: query
+          name: endTimestamp
+          required: false
+          schema:
+            $ref: "#/components/schemas/Timestamp"
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Balances'
+
 components:
   schemas:
     Batch:
@@ -181,7 +206,7 @@ components:
           - FROM HUB
         committedDate:
           $ref: '#/components/schemas/Timestamp'
-    Position:
+    Balances:
       type: object
       properties:
         currency:
