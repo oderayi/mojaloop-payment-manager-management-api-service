@@ -9,9 +9,8 @@
  **************************************************************************/
 
 const { MojaloopRequests } = require('@mojaloop/sdk-standard-components');
-const util = require('util');
 
- class Balances {
+class Balances {
     constructor(config,logger) {
         this._logger = logger;
         this._requests = new MojaloopRequests({
@@ -35,16 +34,11 @@ const util = require('util');
      * @param [opts.status] {string}
      */
     async findBalances(url,headers,query) {
-        try {
-            const res = await this._requests.getCustom(url, headers, query);
-            await this._logger.push({statusCode: res.statusCode, headers: res.headers}).log('GET request sent successfully');
-            return res;
-        }
-        catch(err) {
-            
-            return reject(err);
-        }
+        const res = await this._requests.getCustom(url, headers, query);
+        await this._logger.push({statusCode: res.statusCode, headers: res.headers}).log('GET request sent successfully');
+        return res;
+        
     }
- }
+}
 
- module.exports = Balances;
+module.exports = Balances;
