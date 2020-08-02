@@ -29,6 +29,28 @@ const env = from(process.env, {
 
 module.exports = {
     inboundPort: env.get('INBOUND_LISTEN_PORT').default('4000').asPortNumber(),
-    logIndent: env.get('LOG_INDENT').default('2').asIntPositive()
-    
+    logIndent: env.get('LOG_INDENT').default('2').asIntPositive(),
+    tls: {
+        inbound: {
+            mutualTLS: {
+                enabled: env.get('INBOUND_MUTUAL_TLS_ENABLED').default('false').asBool(),
+            },
+            creds: {
+                ca: env.get('IN_CA_CERT_PATH').asFileListContent(),
+                cert: env.get('IN_SERVER_CERT_PATH').asFileContent(),
+                key: env.get('IN_SERVER_KEY_PATH').asFileContent(),
+            },
+        },
+        outbound: {
+            mutualTLS: {
+                enabled: env.get('OUTBOUND_MUTUAL_TLS_ENABLED').default('false').asBool(),
+            },
+            creds: {
+                ca: env.get('OUT_CA_CERT_PATH').asFileListContent(),
+                cert: env.get('OUT_CLIENT_CERT_PATH').asFileContent(),
+                key: env.get('OUT_CLIENT_KEY_PATH').asFileContent(),
+            },
+        }
+    },
+    peerEndpoint: env.get('PEER_ENDPOINT').required().asString(),
 };

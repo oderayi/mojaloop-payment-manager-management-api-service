@@ -42,9 +42,10 @@ const createRequestIdGenerator = () => async (ctx, next) => {
  * @param sharedState
  * @return {Function}
  */
-const createLogger = (logger) => async (ctx, next) => {
+const createLogger = (logger, sharedState) => async (ctx, next) => {
     ctx.state = {
-        ...ctx.state
+        ...ctx.state,
+        ...sharedState
     };
     ctx.state.logger = logger.push({ request: {
         id: ctx.request.id,

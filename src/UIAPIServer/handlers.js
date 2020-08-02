@@ -14,7 +14,7 @@
 const {
     Balances,
 } = require('@internal/model');
-const config = require('./config');
+
 
 
 const healthCheck = async(ctx) => {
@@ -23,11 +23,10 @@ const healthCheck = async(ctx) => {
 };
 
 const getBalances = async(ctx) => {
-    const balances = new Balances({
-        config: config
-    });
+    const balances = new Balances(ctx.state.conf,ctx.state.logger);
     ctx.response.status = 200;
-    ctx.response.body = balances.findBalances(ctx.request.url, ctx.request.headers, ctx.request.query);
+    const responseData = await balances.findBalances('/reports/balances.json', null, ctx.request.query);
+    ctx.response.body = responseData.data;
 };
 
 

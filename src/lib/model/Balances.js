@@ -9,18 +9,17 @@
  **************************************************************************/
 
 const { MojaloopRequests } = require('@mojaloop/sdk-standard-components');
+const util = require('util');
 
  class Balances {
-    constructor(config) {
-        this.config = config;
-        this.mockData = config.mockData;
+    constructor(config,logger) {
+        this._logger = logger;
         this._requests = new MojaloopRequests({
-            logger: this._logger,
+            logger: logger,
             peerEndpoint: config.peerEndpoint,
             dfspId: config.dfspId,
             tls: config.tls,
             jwsSign: config.jwsSign,
-            jwsSignPutParties: config.jwsSignPutParties,
             jwsSigningKey: config.jwsSigningKey,
             wso2Auth: config.wso2Auth
         });
@@ -35,14 +34,10 @@ const { MojaloopRequests } = require('@mojaloop/sdk-standard-components');
      * @param [opts.batchId] {number}
      * @param [opts.status] {string}
      */
-    findBalances(url,headers,query) {
-        if (this.mockData) {
-            return mock.getTransfers(opts);
-        }
+    async findBalances(url,headers,query) {
         try {
-            const res = await this._requests.getCustom('/reports/balances', headers, query, true);
-            this._logger.push({ peer: res }).log('Party lookup sent to peer');
-
+            const res = await this._requests.getCustom(url, headers, query);
+            await this._logger.push({statusCode: res.statusCode, headers: res.headers}).log('GET request sent successfully');
             return res;
         }
         catch(err) {
