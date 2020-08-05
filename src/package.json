@@ -5,7 +5,8 @@
   "main": "index.js",
   "author": "Murthy kakarlamudi, ModusBox Inc.",
   "contributors": [
-    "Murthy Kakarlamudi <murthy@modusbox.com>"
+    "Murthy Kakarlamudi <murthy@modusbox.com>",
+    "Yevhen Kyriukha <yevhen.kyriukha@modusbox.com>"
   ],
   "repository": {
     "type": "git",
@@ -23,33 +24,37 @@
     "test:int": "jest --ci --reporters=default --reporters=jest-junit --env=node test/integration --forceExit"
   },
   "dependencies": {
+    "@internal/database": "file:lib/database",
     "@internal/log": "file:lib/log",
     "@internal/model": "file:lib/model",
     "@internal/randomphrase": "file:lib/randomphrase",
     "@internal/router": "file:lib/router",
     "@internal/validate": "file:lib/validate",
-    "@mojaloop/sdk-standard-components": "^10.2.2",
-    "ajv": "^6.12.2",
+    "@mojaloop/sdk-standard-components": "^10.6.8",
+    "ajv": "^6.12.3",
     "co-body": "^6.0.0",
     "dotenv": "^8.2.0",
-    "env-var": "^6.1.1",
-    "js-yaml": "^3.13.1",
-    "koa": "^2.11.0",
-    "koa-body": "^4.1.1",
+    "env-var": "^6.3.0",
+    "js-yaml": "^3.14.0",
+    "knex": "^0.21.2",
+    "koa": "^2.13.0",
+    "koa-body": "^4.2.0",
     "koa2-oauth-server": "^1.0.0",
     "node-fetch": "^2.6.0",
-    "uuidv4": "^6.0.8"
+    "redis": "^3.0.2",
+    "uuid": "^8.3.0"
   },
   "devDependencies": {
-    "@types/jest": "^25.2.1",
-    "eslint": "^7.0.0",
-    "eslint-config-airbnb-base": "^14.1.0",
-    "eslint-plugin-import": "^2.20.2",
-    "jest": "^26.0.1",
-    "jest-junit": "^10.0.0",
-    "nock": "^12.0.3",
-    "openapi-response-validator": "^4.0.0",
-    "redis-mock": "^0.49.0",
+    "@types/jest": "^26.0.8",
+    "eslint": "^7.6.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "jest": "^26.2.2",
+    "jest-junit": "^11.1.0",
+    "mockdate": "^3.0.2",
+    "nock": "^13.0.3",
+    "openapi-response-validator": "^7.0.0",
+    "redis-mock": "^0.50.0",
     "supertest": "^4.0.2"
   }
 }

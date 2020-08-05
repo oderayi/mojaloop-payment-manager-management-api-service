@@ -10,7 +10,9 @@
 
 'use strict';
 
-// const Model = require('@internal/model').UIAPIServerModel;
+const {
+    Transfer,
+} = require('@internal/model');
 
 
 const healthCheck = async(ctx) => {
@@ -18,9 +20,91 @@ const healthCheck = async(ctx) => {
     ctx.response.body = JSON.stringify({'status':'ok'});
 };
 
+const getTransfers = async (ctx) => {
+    const { startTimestamp, endTimestamp, institution, status, batchId, limit, offset } = ctx.query;
+    const transfer = new Transfer({
+        db: ctx.state.db,
+        logger: ctx.state.logger,
+        conf: ctx.state.conf,
+    });
+    ctx.response.status = 200;
+    ctx.response.body = await transfer.findAll({ startTimestamp, endTimestamp, institution, status, batchId, limit, offset });
+};
+
+const getTransfer = async (ctx) => {
+    const transfer = new Transfer({
+        db: ctx.state.db,
+        logger: ctx.state.logger,
+        conf: ctx.state.conf,
+    });
+    ctx.response.status = 200;
+    ctx.response.body = await transfer.findOne(ctx.state.path.params.transferId);
+};
+
+const getTransferStatusSummary = async (ctx) => {
+    const { startTimestamp, endTimestamp } = ctx.query;
+    const transfer = new Transfer({
+        db: ctx.state.db,
+        logger: ctx.state.logger,
+        conf: ctx.state.conf,
+    });
+    ctx.response.status = 200;
+    ctx.response.body = await transfer.statusSummary({ startTimestamp, endTimestamp });
+};
+
+const getHourlyFlow = async (ctx) => {
+    const { hoursPrevious } = ctx.state.path.params;
+    const transfer = new Transfer({
+        db: ctx.state.db,
+        logger: ctx.state.logger,
+        conf: ctx.state.conf,
+    });
+    ctx.response.status = 200;
+    ctx.response.body = await transfer.hourlyFlow({ hoursPrevious });
+};
+
+const getTransfersSuccessRate = async (ctx) => {
+    const { minutePrevious } = ctx.state.path.params;
+    const transfer = new Transfer({
+        db: ctx.state.db,
+        logger: ctx.state.logger,
+        conf: ctx.state.conf,
+    });
+    ctx.response.status = 200;
+    ctx.response.body = await transfer.successRate({ minutePrevious });
+};
+
+const getTransfersAvgResponseTime = async (ctx) => {
+    const { minutePrevious } = ctx.state.path.params;
+    const transfer = new Transfer({
+        db: ctx.state.db,
+        logger: ctx.state.logger,
+        conf: ctx.state.conf,
+    });
+    ctx.response.status = 200;
+    ctx.response.body = transfer.avgResponseTime({ minutePrevious });
+};
 
 module.exports = {
     '/health': {
         get: healthCheck
-    }
+    },
+    '/transfers': {
+        get: getTransfers,
+    },
+    '/transfers/{transferId}': {
+        get: getTransfer,
+    },
+    '/transferStatusSummary': {
+        get: getTransferStatusSummary,
+    },
+    '/hourlyFlow': {
+        get: getHourlyFlow,
+    },
+    '/minuteSuccessfulTransferPerc': {
+        get: getTransfersSuccessRate,
+    },
+    '/minuteAverageTransferResponseTime': {
+        get: getTransfersAvgResponseTime,
+    },
 };

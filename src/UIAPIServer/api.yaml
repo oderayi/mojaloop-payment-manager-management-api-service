@@ -12,7 +12,7 @@ paths:
       responses:
         200:
           description: Returns empty body if the scheme adapter outbound transfers service is running.
-  
+
   /transfers:
     get:
       summary: Retrieves all transfers
@@ -72,6 +72,99 @@ paths:
               schema:
                 $ref: '#/components/schemas/Transfer'
 
+  /hourlyFlow:
+    get:
+      summary: Retrieves hourly flow data
+      operationId: findHourlyFlow
+      parameters:
+        - in: query
+          name: hoursPrevious
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 720
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Flow'
+
+  /minuteSuccessfulTransferPerc:
+    get:
+      summary: Retrieves minute by minute successful transfer percentage data
+      operationId: findMinuteSuccessfulTransfer
+      parameters:
+        - in: query
+          name: minutePrevious
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1440
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SuccessfulTransferPerc'
+  /minuteAverageTransferResponseTime:
+    get:
+      summary: Retrieves minute by minute average transfer response time data
+      operationId: findMinuteAverageTransferResponseTime
+      parameters:
+        - in: query
+          name: minutePrevious
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1440
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AverageTransferResponseTime'
+  /transferStatusSummary:
+    get:
+      summary: Retrieves transfers status summary
+      parameters:
+        - in: query
+          name: startTimestamp
+          required: false
+          schema:
+            $ref: "#/components/schemas/Timestamp"
+        - in: query
+          name: endTimestamp
+          required: false
+          schema:
+            $ref: "#/components/schemas/Timestamp"
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+                    status:
+                      $ref: '#/components/schemas/TransferStatus'
+
 components:
   schemas:
     Batch:
@@ -119,7 +212,7 @@ components:
           - OUTBOUND
         currency:
           $ref: '#/components/schemas/Currency'
-        value:
+        amount:
           $ref: '#/components/schemas/Amount'
         type:
           type: string
@@ -131,8 +224,6 @@ components:
           $ref: '#/components/schemas/Timestamp'
         confirmationNumber:
           type: integer
-        amount:
-          $ref: '#/components/schemas/Amount'
         sender:
           type: string
         recipient:

@@ -12,8 +12,10 @@
 
 
 const UIAPIIServerModel = require('./UIAPIServerModel.js');
+const Transfer = require('./Transfer');
 
 
 module.exports = {
-    UIAPIIServerModel
+    UIAPIIServerModel,
+    Transfer,
 };

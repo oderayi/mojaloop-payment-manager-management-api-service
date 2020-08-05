@@ -39,7 +39,6 @@ const createRequestIdGenerator = () => async (ctx, next) => {
 /**
  * Add a log context for each request, log the receipt and handling thereof
  * @param logger
- * @param sharedState
  * @return {Function}
  */
 const createLogger = (logger) => async (ctx, next) => {
