@@ -45,7 +45,9 @@ class UIAPIServer {
         });
 
         this._api.use(middlewares.createErrorHandler());
-        this._api.use(middlewares.createLogger(this._logger));
+
+        const sharedState = { conf: this._conf };
+        this._api.use(middlewares.createLogger(this._logger, sharedState));
         this._api.use(middlewares.createRequestValidator(validator));
         this._api.use(async (ctx, next) => {
             ctx.state.db = this._db;

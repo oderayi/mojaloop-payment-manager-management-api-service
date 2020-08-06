@@ -12,7 +12,10 @@
 
 const {
     Transfer,
+    Balances,
 } = require('@internal/model');
+
+
 
 
 const healthCheck = async(ctx) => {
@@ -84,6 +87,13 @@ const getTransfersAvgResponseTime = async (ctx) => {
     ctx.response.status = 200;
     ctx.response.body = transfer.avgResponseTime({ minutePrevious });
 };
+const getBalances = async(ctx) => {
+    const balances = new Balances(ctx.state.conf,ctx.state.logger);
+    ctx.response.status = 200;
+    const responseData = await balances.findBalances('/reports/balances.json', null, ctx.request.query);
+    ctx.response.body = responseData.data;
+};
+
 
 module.exports = {
     '/health': {
@@ -107,4 +117,7 @@ module.exports = {
     '/minuteAverageTransferResponseTime': {
         get: getTransfersAvgResponseTime,
     },
+    '/balances': {
+        get: getBalances,
+    }
 };

@@ -5,19 +5,15 @@
  *  specified in the corresponding source code repository.                *
  *                                                                        *
  *  ORIGINAL AUTHOR:                                                      *
- *       Murthy Kakarlamudi - murthy@modusbox.com                         *
+ *       Murthy Kakarlamudi - murthy@modusbox.com                             *
  **************************************************************************/
 
 'use strict';
 
 
-const UIAPIIServerModel = require('./UIAPIServerModel.js');
-const Transfer = require('./Transfer');
-const Balances = require('./Balances');
+const requests = require('./requests.js');
 
 
 module.exports = {
-    UIAPIIServerModel,
-    Transfer,
-    Balances
+    ...requests,
 };

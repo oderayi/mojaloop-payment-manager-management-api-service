@@ -139,6 +139,10 @@ paths:
   /transferStatusSummary:
     get:
       summary: Retrieves transfers status summary
+  /balances:
+    get:
+      summary: 'Retrieves position, reserved, committed balances for a given time-period '
+      operationId: findBalances
       parameters:
         - in: query
           name: startTimestamp
@@ -164,6 +168,7 @@ paths:
                       type: integer
                     status:
                       $ref: '#/components/schemas/TransferStatus'
+                  $ref: '#/components/schemas/Balances'
 
 components:
   schemas:
@@ -272,7 +277,7 @@ components:
           - FROM HUB
         committedDate:
           $ref: '#/components/schemas/Timestamp'
-    Position:
+    Balances:
       type: object
       properties:
         currency:

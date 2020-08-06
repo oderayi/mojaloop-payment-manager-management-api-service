@@ -33,4 +33,27 @@ module.exports = {
     runMigrations: env.get('RUN_DB_MIGRATIONS').default('true').asBool(),
     cacheHost: env.get('CACHE_HOST').default('172.17.0.4').asString(),
     cachePort: env.get('CACHE_PORT').default(6379).asPortNumber(),
+    tls: {
+        inbound: {
+            mutualTLS: {
+                enabled: env.get('INBOUND_MUTUAL_TLS_ENABLED').default('false').asBool(),
+            },
+            creds: {
+                ca: env.get('IN_CA_CERT_PATH').asFileListContent(),
+                cert: env.get('IN_SERVER_CERT_PATH').asFileContent(),
+                key: env.get('IN_SERVER_KEY_PATH').asFileContent(),
+            },
+        },
+        outbound: {
+            mutualTLS: {
+                enabled: env.get('OUTBOUND_MUTUAL_TLS_ENABLED').default('false').asBool(),
+            },
+            creds: {
+                ca: env.get('OUT_CA_CERT_PATH').asFileListContent(),
+                cert: env.get('OUT_CLIENT_CERT_PATH').asFileContent(),
+                key: env.get('OUT_CLIENT_KEY_PATH').asFileContent(),
+            },
+        }
+    },
+    peerEndpoint: env.get('PEER_ENDPOINT').required().asString(),
 };
