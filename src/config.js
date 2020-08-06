@@ -28,7 +28,9 @@ const env = from(process.env, {
 });
 
 module.exports = {
-    inboundPort: env.get('INBOUND_LISTEN_PORT').default('4000').asPortNumber(),
-    logIndent: env.get('LOG_INDENT').default('2').asIntPositive()
-    
+    inboundPort: env.get('INBOUND_LISTEN_PORT').default('9000').asPortNumber(),
+    logIndent: env.get('LOG_INDENT').default('2').asIntPositive(),
+    runMigrations: env.get('RUN_DB_MIGRATIONS').default('true').asBool(),
+    cacheHost: env.get('CACHE_HOST').default('172.17.0.4').asString(),
+    cachePort: env.get('CACHE_PORT').default(6379).asPortNumber(),
 };

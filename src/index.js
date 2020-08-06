@@ -40,7 +40,7 @@ class Server {
         await this.uiApiServer.start();
     }
 
-    
+
     stop() {
         return Promise.all([
             this.uiApiServer.stop()

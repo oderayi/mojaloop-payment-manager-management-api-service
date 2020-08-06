@@ -18,6 +18,7 @@ const path = require('path');
 const { Logger, Transports } = require('@internal/log');
 
 const Validate = require('@internal/validate');
+const database = require('@internal/database');
 const router = require('@internal/router');
 const handlers = require('./handlers');
 const middlewares = require('./middlewares');
@@ -38,9 +39,18 @@ class UIAPIServer {
         const validator = new Validate();
         await validator.initialise(apiSpecs);
 
+        this._db = await database({
+            ...this._conf,
+            logger: this._logger,
+        });
+
         this._api.use(middlewares.createErrorHandler());
         this._api.use(middlewares.createLogger(this._logger));
         this._api.use(middlewares.createRequestValidator(validator));
+        this._api.use(async (ctx, next) => {
+            ctx.state.db = this._db;
+            await next();
+        });
         this._api.use(router(handlers));
         this._api.use(middlewares.createResponseBodyHandler());
 
@@ -51,7 +61,7 @@ class UIAPIServer {
     async start() {
         await new Promise((resolve) => this._server.listen(this._conf.inboundPort, resolve));
         this._logger.log(`Serving inbound API on port ${this._conf.inboundPort}`);
-        
+
     }
 
     async stop() {
