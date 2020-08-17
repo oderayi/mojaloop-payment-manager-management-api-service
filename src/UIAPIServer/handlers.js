@@ -13,6 +13,7 @@
 const {
     Transfer,
     Balances,
+    DFSP
 } = require('@internal/model');
 
 
@@ -87,10 +88,22 @@ const getTransfersAvgResponseTime = async (ctx) => {
     ctx.response.status = 200;
     ctx.response.body = transfer.avgResponseTime({ minutePrevious });
 };
+
 const getBalances = async(ctx) => {
     const balances = new Balances(ctx.state.conf,ctx.state.logger);
     ctx.response.status = 200;
     const responseData = await balances.findBalances('/reports/balances.json', null, ctx.request.query);
+    ctx.response.body = responseData.data;
+};
+
+const getDFSPDetails = async(ctx) => {
+    const dfsp = new DFSP({
+        db: ctx.state.db,
+        logger: ctx.state.logger,
+        conf: ctx.state.conf,
+    });
+    ctx.response.status = 200;
+    const responseData = await dfsp.getDfspDetails(ctx.state.path.params.transferId);
     ctx.response.body = responseData.data;
 };
 
@@ -119,5 +132,8 @@ module.exports = {
     },
     '/balances': {
         get: getBalances,
+    },
+    '/dfsps/{dfspId}': {
+        get: getDFSPDetails,
     }
 };

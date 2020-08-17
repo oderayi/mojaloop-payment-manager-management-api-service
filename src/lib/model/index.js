@@ -14,10 +14,12 @@
 const UIAPIIServerModel = require('./UIAPIServerModel.js');
 const Transfer = require('./Transfer');
 const Balances = require('./Balances');
+const DFSP = require('./DFSP');
 
 
 module.exports = {
     UIAPIIServerModel,
     Transfer,
-    Balances
+    Balances,
+    DFSP
 };
