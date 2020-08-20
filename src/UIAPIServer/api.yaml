@@ -13,6 +13,17 @@ paths:
         200:
           description: Returns empty body if the scheme adapter outbound transfers service is running.
 
+  /dfsps/{dfspId}:
+    get:
+      summary: Provide details of FSP based on the ID
+      operationId: getFSPDetails
+      responses: 
+        200: 
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DFSPDetails'
   /transfers:
     get:
       summary: Retrieves all transfers
@@ -303,6 +314,42 @@ components:
           $ref: '#/components/schemas/Amount'
         timestamp:
           $ref: '#/components/schemas/Timestamp'
+
+    DFSPDetails:
+      type: object
+      properties:
+        id:
+          type: string
+        batchId:
+          type: integer
+        institution:
+          type: string
+        direction:
+          type: string
+          enum:
+          - INBOUND
+          - OUTBOUND
+        currency:
+          $ref: '#/components/schemas/Currency'
+        amount:
+          $ref: '#/components/schemas/Amount'
+        type:
+          type: string
+          enum:
+          - P2P
+        status:
+          $ref: "#/components/schemas/TransferStatus"
+        initiatedTimestamp:
+          $ref: '#/components/schemas/Timestamp'
+        confirmationNumber:
+          type: integer
+        sender:
+          type: string
+        recipient:
+          type: string
+        details:
+          type: string
+
     SuccessfulTransferPerc:
       type: object
       properties:
