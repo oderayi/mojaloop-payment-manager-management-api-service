@@ -79,7 +79,7 @@ class UIAPIServer {
         // Set up a logger for each running server
         return new Logger({
             context: {
-                app: 'mojaloop-sdk-inbound-api'
+                app: 'mojaloop-payment-manager-management-api-service'
             },
             space: this._conf.logIndent,
             transports,
