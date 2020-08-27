@@ -31,6 +31,7 @@
     "@internal/router": "file:lib/router",
     "@internal/validate": "file:lib/validate",
     "@mojaloop/sdk-standard-components": "^10.6.8",
+    "@modusbox/mcm-client": "^1.0.3",
     "ajv": "^6.12.3",
     "co-body": "^6.0.0",
     "dotenv": "^8.2.0",

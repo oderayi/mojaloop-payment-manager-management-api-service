@@ -180,6 +180,30 @@ paths:
                     status:
                       $ref: '#/components/schemas/TransferStatus'
                   $ref: '#/components/schemas/Balances'
+  /environments/{envId}/dfsp/servercerts:
+    parameters:
+      - name: envId
+        in: path
+        description: ID of environment
+        required: true
+        schema:
+          type: string
+    post:
+      tags:
+        - DFSP-server-certificates-configuration
+      summary: post server certificate
+      description: TBD
+      operationId: createDfspServerCerts
+      requestBody:
+        $ref: "#/components/requestBodies/BaseServerCert"
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerCert"
+      x-swagger-router-controller: DfspServerCerts
 
 components:
   schemas:
@@ -570,3 +594,173 @@ components:
         without a minor currency unit. It also only allows four digits in the
         minor currency unit; a negative value is not allowed. Using more than 18
         digits in the major currency unit is not allowed.
+    BaseServerCert:
+      type: object
+      description: The server certificate.
+      properties:
+        rootCertificate:
+          type: string
+          description: PEM-encoded root CA certificate
+        intermediateChain:
+          type: string
+          description: PEM-encoded intermediate chain certificats
+        serverCertificate:
+          type: string
+          description: PEM-encoded server certificate
+    ServerCert:
+      description: The server certificate, with info and id.
+      allOf:
+        - $ref: "#/components/schemas/BaseServerCert"
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+            rootCertificateInfo:
+              $ref: "#/components/schemas/CertInfo"
+            intermediateChainInfo:
+              type: array
+              description: List of CertInfo.
+              items:
+                $ref: "#/components/schemas/CertInfo"
+            serverCertificateInfo:
+              $ref: "#/components/schemas/CertInfo"
+            validations:
+              $ref: "#/components/schemas/ValidationList"
+            validationState:
+              $ref: "#/components/schemas/ValidationState"
+            state:
+              $ref: "#/components/schemas/ValidInvalidState"
+    CertInfo:
+      type: object
+      description: Certificate contents and info
+      properties:
+        subject:
+          type: object
+          properties:
+            CN:
+              type: string
+              description: Common Name
+            emailAddress:
+              type: string
+              description: email address
+            O:
+              type: string
+              description: Organization
+            OU:
+              type: string
+              description: Organizational Unit
+            C:
+              type: string
+              description: Country
+            ST:
+              type: string
+              description: State
+            L:
+              type: string
+              description: Location
+        issuer:
+          type: object
+          properties:
+            CN:
+              type: string
+              description: Common Name
+            emailAddress:
+              type: string
+              description: email address
+            O:
+              type: string
+              description: Organization
+            OU:
+              type: string
+              description: Organizational Unit
+            C:
+              type: string
+              description: Country
+            ST:
+              type: string
+              description: State
+            L:
+              type: string
+              description: Location
+        subjectAlternativeNames:
+          type: array
+          items:
+            type: string
+        serialNumber:
+          type: string
+          example: "17159976289428250189079625547205715159"
+        notBefore:
+          type: string
+          description: ISO date format
+          example: 2019-02-04T00:00:00Z
+        notAfter:
+          type: string
+          description: ISO date format
+          example: 2020-02-12T12:00:00Z
+        signatureAlgorithm:
+          type: string
+          example: SHA256WithRSA
+    ValidationList:
+      type: array
+      items:
+        $ref: "#/components/schemas/Validation"
+    ValidInvalidState:
+      type: boolean
+    ValidationState:
+      type: string
+      enum:
+        - VALID
+        - INVALID
+        - NOT_AVAILABLE
+    Validation:
+      type: object
+      required:
+        - validationCode
+        - performed
+        - result
+        - message
+      properties:
+        validationCode:
+          $ref: "#/components/schemas/ValidationCodes"
+        performed:
+          description: Whether the validation has been performed or not
+          type: boolean
+        result:
+          type: string
+          enum:
+            - VALID
+            - INVALID
+            - NOT_AVAILABLE
+        message:
+          description: Textual description of the validation result
+          type: string
+        messageTemplate:
+          description: Textual description of the validation result, using the JavaScript
+            template literal format
+          type: string
+        data:
+          description: validation-specific data. Could be used by the UI to show more
+            detail to the user
+          type: object
+        details:
+          description: Command output or some other details about the validation
+          type: string
+    ValidationCodes:
+      type: string
+      description: Identifies the type of validation
+      enum:
+        - CSR_CERT_SAME_PUBLIC_KEY
+        - CSR_CERT_SAME_SUBJECT_INFO
+        - CSR_CERT_PUBLIC_PRIVATE_KEY_MATCH
+        - CERTIFICATE_SIGNED_BY_DFSP_CA
+        - CERTIFICATE_VALIDITY
+        - CERTIFICATE_USAGE_CLIENT
+        - CSR_SIGNATURE_VALID
+        - CSR_PUBLIC_KEY_LENGTH
+        - CSR_SIGNATURE_ALGORITHM
+        - CERTIFICATE_USAGE_SERVER
+        - CERTIFICATE_CHAIN
+        - CA_CERTIFICATE_USAGE
+        - CERTIFICATE_VALID_OCSP
+        - CERTIFICATE_VALID_CRL

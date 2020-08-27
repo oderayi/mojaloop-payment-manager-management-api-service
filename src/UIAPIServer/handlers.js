@@ -13,7 +13,8 @@
 const {
     Transfer,
     Balances,
-    DFSP
+    DFSP,
+    ServerCertificatesModel,
 } = require('@internal/model');
 
 
@@ -107,6 +108,16 @@ const getDFSPDetails = async(ctx) => {
     ctx.response.body = responseData.data;
 };
 
+const uploadServerCertificates = async(ctx) => {
+    const serverCertModel = new ServerCertificatesModel({
+        logger: ctx.state.logger,
+        conf: ctx.state.conf,
+    });
+    ctx.response.status = 200;
+    const responseData = await serverCertModel.getDfspDetails(ctx.state.path.params.transferId);
+    ctx.response.body = responseData.data;
+};
+
 
 module.exports = {
     '/health': {
@@ -135,5 +146,8 @@ module.exports = {
     },
     '/dfsps/{dfspId}': {
         get: getDFSPDetails,
+    },
+    '/environments/{envId}/dfsp/servercerts': {
+        post: uploadServerCertificates,
     }
 };
