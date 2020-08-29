@@ -12,6 +12,7 @@ const util = require('util');
 
 const randomPhrase = require('@internal/randomphrase');
 const { Errors } = require('@mojaloop/sdk-standard-components');
+const coBody = require('co-body');
 
 /**
  * Log raw to console as a last resort
@@ -33,6 +34,32 @@ const createErrorHandler = () => async (ctx, next) => {
  */
 const createRequestIdGenerator = () => async (ctx, next) => {
     ctx.request.id = randomPhrase();
+    await next();
+};
+
+/**
+ * Deal with mojaloop API content type headers, treat as JSON
+ * @param logger
+ * @return {Function}
+ */
+//
+const createHeaderValidator = (logger) => async (ctx, next) => {
+    const validHeaders = new Set([
+        'application/json'
+    ]);
+    if (validHeaders.has(ctx.request.headers['content-type'])) {
+        try {
+            ctx.request.body = await coBody.json(ctx.req);
+        }
+        catch(err) {
+            // error parsing body
+            logger.push({ err }).log('Error parsing body');
+            ctx.response.status = 400;
+            ctx.response.body = new Errors.MojaloopFSPIOPError(err, err.message, null,
+                Errors.MojaloopApiErrorCodes.MALFORMED_SYNTAX).toApiErrorObject();
+            return;
+        }
+    }
     await next();
 };
 
@@ -113,6 +140,7 @@ const createResponseBodyHandler = () => async (ctx, next) => {
 module.exports = {
     createErrorHandler,
     createRequestIdGenerator,
+    createHeaderValidator,
     createLogger,
     createRequestValidator,
     createResponseBodyHandler,

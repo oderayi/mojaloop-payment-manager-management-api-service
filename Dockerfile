@@ -6,9 +6,12 @@ EXPOSE 3000
 
 WORKDIR /src/
 
+ARG NPM_TOKEN
+
 # This is super-ugly, but it means we don't have to re-run npm install every time any of the source
 # files change- only when any dependencies change- which is a superior developer experience when
 # relying on docker-compose.
+COPY ./src/.npmrc ./.npmrc
 COPY ./src/package.json ./package.json
 COPY ./src/package-lock.json ./package-lock.json
 COPY ./src/lib/database/package.json ./lib/database/package.json
@@ -19,6 +22,7 @@ COPY ./src/lib/requests/package.json ./lib/requests/package.json
 COPY ./src/lib/router/package.json ./lib/router/package.json
 COPY ./src/lib/validate/package.json ./lib/validate/package.json
 RUN npm install --only=production
+RUN rm -f ./.npmrc
 
 FROM node:12.18.3-alpine
 

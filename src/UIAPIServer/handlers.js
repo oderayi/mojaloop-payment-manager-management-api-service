@@ -114,7 +114,8 @@ const uploadServerCertificates = async(ctx) => {
         conf: ctx.state.conf,
     });
     ctx.response.status = 200;
-    const responseData = await serverCertModel.getDfspDetails(ctx.state.path.params.transferId);
+    console.log(`in handler.js body is: ${ctx.request.body}`);
+    const responseData = await serverCertModel.uploadServerCertificates(ctx.state.path.params.envId, ctx.request.body);
     ctx.response.body = responseData.data;
 };
 

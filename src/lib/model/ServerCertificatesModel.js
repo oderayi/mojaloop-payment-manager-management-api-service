@@ -8,19 +8,60 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                   *
  **************************************************************************/
 const { ServerCertificatesModel : MCMClientServerCertificatesModel} = require('@modusbox/mcm-client');
+const util = require('util');
+const { request } = require('@mojaloop/sdk-standard-components');
+
 
 class ServerCertificatesModel {
     constructor(opts) {
-        this._dfspId = opts.dfspId;
+        console.log(`opts.conf.mcmServerEndpoint: ${util.inspect(opts.conf.mcmServerEndpoint)}`);
+        this._dfspId = opts.conf.dfspId;
         this._logger = opts.logger;
+        this._mcmServerEndpoint = opts.conf.mcmServerEndpoint;
+        this._mcmClientServerCertModel = new MCMClientServerCertificatesModel({
+            dfspId: opts.conf.dfspId,
+            logger: opts.logger,
+            hubEndpoint: opts.conf.mcmServerEndpoint,        
+        });
+    }
+
+    _buildUrl(...args) {
+        return args
+                .filter(e => e !== undefined)
+                .map(s => s.replace(/(^\/*|\/*$)/g, '')) /* This comment works around a problem with editor syntax highglighting */
+                .join('/')
+            + ((args[args.length - 1].slice(-1) === '/') ? '/' : '');
+    }
+
+    _post(url, body) {
+        const reqOpts = {
+            method: 'POST',
+            uri: this._buildUrl(this._mcmServerEndpoint, url),
+            body: JSON.stringify(body),
+            headers: {'Content-Type' : 'application/json'}
+        };
+
+        try {
+            console.log(`making post request to url: ${reqOpts.uri} with body: ${util.inspect(reqOpts.body)}`);
+            const res =  request({...reqOpts, agent: this._agent});
+            return res;
+        }
+        catch (e) {
+            console.log(`error in post: ${util.inspect(e)}`);
+            throw e;
+        }
     }
 
     async uploadServerCertificates(envId, body) {
-        return MCMClientServerCertificatesModel.uploadServerCertificates({
+        console.log(`in uploadServerCertificates body: ${JSON.stringify(body)}`);
+        const res = await this._mcmClientServerCertModel.uploadServerCertificates({
             envId,
             dfspId: this._dfspId,
             entry: body
         });
+        //const res = await this._post(`/environments/${envId}/dfsps/${this._dfspId}/servercerts`, body);
+        console.log(`in uploadServerCertificates res: ${util.inspect(res)}`);
+        return res;
     }
 }
 

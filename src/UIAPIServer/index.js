@@ -45,7 +45,7 @@ class UIAPIServer {
         });
 
         this._api.use(middlewares.createErrorHandler());
-
+        this._api.use(middlewares.createHeaderValidator(this._logger));
         const sharedState = { conf: this._conf };
         this._api.use(middlewares.createLogger(this._logger, sharedState));
         this._api.use(middlewares.createRequestValidator(validator));

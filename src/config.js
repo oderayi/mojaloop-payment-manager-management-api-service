@@ -58,4 +58,5 @@ module.exports = {
     peerEndpoint: env.get('PEER_ENDPOINT').required().asString(),
     mcmServerEndpoint: env.get('MCM_SERVER_ENDPOINT').required().asString(),
     mcmAPIToken: env.get('MCM_API_TOKEN').required().asString(),
+    dfspId: env.get('DFSP_ID').required().asString(),
 };

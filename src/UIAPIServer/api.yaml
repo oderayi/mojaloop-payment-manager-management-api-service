@@ -195,7 +195,7 @@ paths:
       description: TBD
       operationId: createDfspServerCerts
       requestBody:
-        $ref: "#/components/requestBodies/BaseServerCert"
+        $ref: "#/components/schemas/BaseServerCert"
       responses:
         "200":
           description: successful operation
