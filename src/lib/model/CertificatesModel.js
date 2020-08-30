@@ -12,7 +12,7 @@ const util = require('util');
 const { request } = require('@mojaloop/sdk-standard-components');
 
 
-class ServerCertificatesModel {
+class CertificatesModel {
     constructor(opts) {
         console.log(`opts.conf.mcmServerEndpoint: ${util.inspect(opts.conf.mcmServerEndpoint)}`);
         this._dfspId = opts.conf.dfspId;
@@ -63,6 +63,17 @@ class ServerCertificatesModel {
         console.log(`in uploadServerCertificates res: ${util.inspect(res)}`);
         return res;
     }
+
+    async uploadClientCSR(envId, body) {
+        console.log(`in uploadClientCSR body: ${JSON.stringify(body)}`);
+        const res = await this._mcmClientDFSPCertModel.createCSR({
+            envId,
+            csr: body
+        });
+        //const res = await this._post(`/environments/${envId}/dfsps/${this._dfspId}/servercerts`, body);
+        console.log(`in uploadClientCSR res: ${util.inspect(res)}`);
+        return res;
+    }
 }
 
-module.exports = ServerCertificatesModel;
+module.exports = CertificatesModel;

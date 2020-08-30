@@ -16,6 +16,7 @@ const Transfer = require('./Transfer');
 const Balances = require('./Balances');
 const DFSP = require('./DFSP');
 const ServerCertificatesModel = require('./ServerCertificatesModel');
+const CertificatesModel = require('./CertificatesModel');
 
 
 module.exports = {
@@ -24,4 +25,5 @@ module.exports = {
     Balances,
     DFSP,
     ServerCertificatesModel,
+    CertificatesModel,
 };

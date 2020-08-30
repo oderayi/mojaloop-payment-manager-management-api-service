@@ -15,7 +15,7 @@ const http = require('http');
 class DFSP {
     constructor(opts) {
         this._db = opts.db;
-        this._conf = opts.conf,
+        this._mcmServerEndpoint = opts.conf.mcmServerEndpoint;
         this._agent = new http.Agent({
             keepAlive: true
         });
@@ -37,9 +37,8 @@ class DFSP {
         });
         const reqOpts = {
             method: 'GET',
-            uri: buildUrl(this._conf.mcmServerEndpoint, url),
+            uri: buildUrl(this._mcmServerEndpoint, url),
             qs: query,
-            headers: this._conf.mcmAPIToken,
         };
 
         return request({...reqOpts, agent: this._agent});
@@ -49,12 +48,16 @@ class DFSP {
      *
      * @param id {string}
      */
-    async getDfspDetails(opts) {
-        this._logger.log(`Extracting all the FSPs for environment dev`);
+    async getDfspDetails() {
+        this._logger.log(`Extracting all the FSPs for environment ${this._envId}`);
         // const fspList = await this._get(`/environments/${opts.envId}/dfsps`);
-        const fspList = await this._get(`/environments/1/dfsps`);
+        const fspList = await this._get(`/environments/${this._envId}/dfsps`);
         this._logger.log(`Returned result from DB: ${util.inspect(fspList)}`);
-        return fspList;
+        let retFsp;
+        fspList.filter( fsp => {
+            retFsp =  fsp.id === this._fspId?fsp:undefined;
+        });
+        return retFsp;
     }
 
 }

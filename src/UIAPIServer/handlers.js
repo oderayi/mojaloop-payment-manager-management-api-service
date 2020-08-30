@@ -15,6 +15,7 @@ const {
     Balances,
     DFSP,
     ServerCertificatesModel,
+    CertificatesModel,
 } = require('@internal/model');
 
 
@@ -104,7 +105,7 @@ const getDFSPDetails = async(ctx) => {
         conf: ctx.state.conf,
     });
     ctx.response.status = 200;
-    const responseData = await dfsp.getDfspDetails(ctx.state.path.params.transferId);
+    const responseData = await dfsp.getDfspDetails();
     ctx.response.body = responseData.data;
 };
 
@@ -116,6 +117,17 @@ const uploadServerCertificates = async(ctx) => {
     ctx.response.status = 200;
     console.log(`in handler.js body is: ${ctx.request.body}`);
     const responseData = await serverCertModel.uploadServerCertificates(ctx.state.path.params.envId, ctx.request.body);
+    ctx.response.body = responseData.data;
+};
+
+const uploadClientCSR = async(ctx) => {
+    const certModel = new CertificatesModel({
+        logger: ctx.state.logger,
+        conf: ctx.state.conf,
+    });
+    ctx.response.status = 200;
+    console.log(`in handler.js body is: ${ctx.request.body}`);
+    const responseData = await certModel.uploadClientCSR(ctx.state.path.params.envId, ctx.request.body.clientCSR);
     ctx.response.body = responseData.data;
 };
 
@@ -150,5 +162,8 @@ module.exports = {
     },
     '/environments/{envId}/dfsp/servercerts': {
         post: uploadServerCertificates,
+    },
+    '/environments/{envId}/dfsp/clientcerts': {
+        post: uploadClientCSR,
     }
 };

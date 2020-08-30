@@ -22,6 +22,9 @@ const database = require('@internal/database');
 const router = require('@internal/router');
 const handlers = require('./handlers');
 const middlewares = require('./middlewares');
+const { MCMStateModel, Storage } = require('@modusbox/mcm-client');
+const { dfspId } = require('../config');
+const { throws } = require('assert');
 
 class UIAPIServer {
     constructor(conf) {
@@ -57,6 +60,19 @@ class UIAPIServer {
         this._api.use(middlewares.createResponseBodyHandler());
 
         this._server = this._createServer();
+
+        // Code to setup mcm client
+        const storage = new Storage.File({dirName: this._conf.mcmClientSecretsLocation});
+        const mcmState = new MCMStateModel({
+            dfspId: this._conf.dfspId,
+            envId: this._conf.envId,
+            hubEndpoint: this._conf.mcmServerEndpoint,
+            refreshIntervalSeconds: this._conf.mcmClientRefreshInternal,
+            storage,
+            logger: this._logger,
+        });
+        await mcmState.start();
+
         return this._server;
     }
 
