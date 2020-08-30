@@ -11,6 +11,7 @@ const util = require('util');
 const { request } = require('@mojaloop/sdk-standard-components');
 const { buildUrl } = require('./utils');
 const http = require('http');
+const { DFSPEnvConfigModel } = require('@modusbox/mcm-client');
 
 class DFSP {
     constructor(opts) {
@@ -20,6 +21,13 @@ class DFSP {
             keepAlive: true
         });
         this._logger = opts.logger;
+        this._envId = opts.conf.envId;
+        this._dfspId = opts.conf.dfspId;
+        this._mcmDFSPEnvConfigModel = new DFSPEnvConfigModel({
+            dfspId: opts.conf.dfspId,
+            logger: opts.logger,
+            hubEndpoint: opts.conf.mcmServerEndpoint,        
+        });
     }
 
     static _convertToApiFormat(dfsp) {
@@ -29,21 +37,6 @@ class DFSP {
         };
     }
 
-    _get(url, query = {}) {
-        Object.entries(query).forEach(([k, v]) => {
-            if (v === undefined) {
-                delete query[k];
-            }
-        });
-        const reqOpts = {
-            method: 'GET',
-            uri: buildUrl(this._mcmServerEndpoint, url),
-            qs: query,
-        };
-
-        return request({...reqOpts, agent: this._agent});
-    }
-
     /**
      *
      * @param id {string}
@@ -51,12 +44,16 @@ class DFSP {
     async getDfspDetails() {
         this._logger.log(`Extracting all the FSPs for environment ${this._envId}`);
         // const fspList = await this._get(`/environments/${opts.envId}/dfsps`);
-        const fspList = await this._get(`/environments/${this._envId}/dfsps`);
+        const fspList = await this._mcmDFSPEnvConfigModel.getDFSPList({
+            envId : this._envId
+        });
         this._logger.log(`Returned result from DB: ${util.inspect(fspList)}`);
         let retFsp;
+        console.log(`this_dfspId: ${this._dfspId}`);
         fspList.filter( fsp => {
-            retFsp =  fsp.id === this._fspId?fsp:undefined;
+            retFsp =  fsp.id === this._dfspId?fsp:undefined;
         });
+        console.log(`retFsp: ${util.inspect(retFsp)}`);
         return retFsp;
     }
 

@@ -106,7 +106,7 @@ const getDFSPDetails = async(ctx) => {
     });
     ctx.response.status = 200;
     const responseData = await dfsp.getDfspDetails();
-    ctx.response.body = responseData.data;
+    ctx.response.body = responseData;
 };
 
 const uploadServerCertificates = async(ctx) => {
