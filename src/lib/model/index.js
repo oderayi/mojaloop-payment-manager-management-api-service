@@ -8,22 +8,14 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                         *
  **************************************************************************/
 
-'use strict';
-
-
-const UIAPIIServerModel = require('./UIAPIServerModel.js');
 const Transfer = require('./Transfer');
 const Balances = require('./Balances');
 const DFSP = require('./DFSP');
-const ServerCertificatesModel = require('./ServerCertificatesModel');
 const CertificatesModel = require('./CertificatesModel');
 
-
 module.exports = {
-    UIAPIIServerModel,
     Transfer,
     Balances,
     DFSP,
-    ServerCertificatesModel,
     CertificatesModel,
 };

@@ -20,7 +20,6 @@ const { buildUrl, throwOrJson, HTTPResponseError } = require('./common');
  */
 class Requests {
     constructor(config) {
-        this.config = config;
         this.logger = config.logger;
 
         // make sure we keep alive connections to the backend
@@ -31,7 +30,7 @@ class Requests {
         this.transportScheme = 'http';
 
         // Switch or peer DFSP endpoint
-        this.backendEndpoint = `${this.transportScheme}://${config.backendEndpoint}`;
+        this.endpoint = `${this.transportScheme}://${config.endpoint}`;
     }
 
     /**
@@ -40,19 +39,15 @@ class Requests {
      * @returns {object} - headers object for use in requests to mojaloop api endpoints
      */
     _buildHeaders () {
-        const headers = {
+        return {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Date': new Date().toUTCString()
         };
-
-        return headers;
     }
 
     _get(url) {
         const reqOpts = {
             method: 'GET',
-            uri: buildUrl(this.backendEndpoint, url),
+            uri: buildUrl(this.endpoint, url),
             headers: this._buildHeaders(),
         };
 
@@ -72,7 +67,7 @@ class Requests {
     _put(url, body) {
         const reqOpts = {
             method: 'PUT',
-            uri: buildUrl(this.backendEndpoint, url),
+            uri: buildUrl(this.endpoint, url),
             headers: this._buildHeaders(),
             body: JSON.stringify(body),
         };
@@ -91,7 +86,7 @@ class Requests {
     _post(url, body) {
         const reqOpts = {
             method: 'POST',
-            uri: buildUrl(this.backendEndpoint, url),
+            uri: buildUrl(this.endpoint, url),
             headers: this._buildHeaders(),
             body: JSON.stringify(body),
         };
@@ -110,5 +105,6 @@ class Requests {
 
 module.exports = {
     Requests,
+    buildUrl,
     HTTPResponseError,
 };

@@ -20,24 +20,16 @@ class Balances {
             tls: config.tls,
             jwsSign: config.jwsSign,
             jwsSigningKey: config.jwsSigningKey,
-            wso2Auth: config.wso2Auth
+            wso2Auth: config.wso2Auth,
         });
     }
 
     /**
      *
-     * @param opts {Object}
-     * @param [opts.startTimestamp] {string}
-     * @param [opts.endTimestamp] {string}
-     * @param [opts.institution] {string}
-     * @param [opts.batchId] {number}
-     * @param [opts.status] {string}
+     * @param query {object}
      */
-    async findBalances(url,headers,query) {
-        const res = await this._requests.getCustom(url, headers, query);
-        await this._logger.push({statusCode: res.statusCode, headers: res.headers}).log('GET request sent successfully');
-        return res;
-        
+    async findBalances(query) {
+        return this._requests.getCustom('/reports/balances.json', null, query);
     }
 }
 

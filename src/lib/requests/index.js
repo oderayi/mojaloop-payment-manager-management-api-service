@@ -8,12 +8,6 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                             *
  **************************************************************************/
 
-'use strict';
-
-
 const requests = require('./requests.js');
 
-
-module.exports = {
-    ...requests,
-};
+module.exports = requests;
