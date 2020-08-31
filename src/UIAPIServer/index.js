@@ -62,7 +62,7 @@ class UIAPIServer {
         this._server = this._createServer();
 
         // Code to setup mcm client
-        const storage = new Storage.File({dirName: this._conf.mcmClientSecretsLocation});
+        const storage = new Storage.File({ dirName: this._conf.mcmClientSecretsLocation });
         const mcmState = new MCMStateModel({
             dfspId: this._conf.dfspId,
             envId: this._conf.envId,

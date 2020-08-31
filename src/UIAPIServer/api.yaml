@@ -17,8 +17,8 @@ paths:
     get:
       summary: Provide details of FSP based on the ID
       operationId: getFSPDetails
-      responses: 
-        200: 
+      responses:
+        200:
           description: successful operation
           content:
             application/json:
@@ -150,10 +150,6 @@ paths:
   /transferStatusSummary:
     get:
       summary: Retrieves transfers status summary
-  /balances:
-    get:
-      summary: 'Retrieves position, reserved, committed balances for a given time-period '
-      operationId: findBalances
       parameters:
         - in: query
           name: startTimestamp
@@ -179,7 +175,33 @@ paths:
                       type: integer
                     status:
                       $ref: '#/components/schemas/TransferStatus'
+
+  /balances:
+    get:
+      summary: 'Retrieves position, reserved, committed balances for a given time-period '
+      operationId: findBalances
+      parameters:
+        - in: query
+          name: startTimestamp
+          required: false
+          schema:
+            $ref: "#/components/schemas/Timestamp"
+        - in: query
+          name: endTimestamp
+          required: false
+          schema:
+            $ref: "#/components/schemas/Timestamp"
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
                   $ref: '#/components/schemas/Balances'
+
+
   /environments/{envId}/dfsp/servercerts:
     parameters:
       - name: envId

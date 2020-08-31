@@ -31,7 +31,7 @@ module.exports = {
     inboundPort: env.get('INBOUND_LISTEN_PORT').default('9000').asPortNumber(),
     logIndent: env.get('LOG_INDENT').default('2').asIntPositive(),
     runMigrations: env.get('RUN_DB_MIGRATIONS').default('true').asBool(),
-    cacheHost: env.get('CACHE_HOST').default('172.17.0.4').asString(),
+    cacheHost: env.get('CACHE_HOST').asString(),
     cachePort: env.get('CACHE_PORT').default(6379).asPortNumber(),
     tls: {
         inbound: {
@@ -55,9 +55,8 @@ module.exports = {
             },
         }
     },
-    peerEndpoint: env.get('PEER_ENDPOINT').required().asString(),
     mcmServerEndpoint: env.get('MCM_SERVER_ENDPOINT').required().asString(),
-    mcmClientRefreshInternal: env.get('MCM_CLIENT_REFRESH_INTERVAL').required().asString(),
+    mcmClientRefreshInternal: env.get('MCM_CLIENT_REFRESH_INTERVAL').default(300).asString(),
     mcmClientSecretsLocation: env.get('MCM_CLIENT_SECRETS_LOCATION').required().asString(),
     mcmAPIToken: env.get('MCM_API_TOKEN').required().asString(),
     dfspId: env.get('DFSP_ID').required().asString(),
