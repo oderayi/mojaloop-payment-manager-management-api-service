@@ -170,6 +170,18 @@ const uploadClientCSR = async(ctx) => {
     ctx.response.body = await certModel.uploadClientCSR(ctx.request.body.clientCSR);
 };
 
+const getClientCertificates = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.state.path.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.response.status = 200;
+    ctx.response.body = await certModel.getCertificates();
+};
+
 
 module.exports = {
     '/health': {
@@ -210,6 +222,7 @@ module.exports = {
         post: uploadServerCertificates,
     },
     '/environments/{envId}/dfsp/clientcerts': {
+        get: getClientCertificates,
         post: uploadClientCSR,
     }
 };

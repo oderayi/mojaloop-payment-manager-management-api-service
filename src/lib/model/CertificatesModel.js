@@ -21,13 +21,22 @@ class CertificatesModel {
         });
     }
 
+    /**
+     * Gets uploaded DFSP CSRs and certificates
+     */
+    async getCertificates() {
+        return this._mcmClientDFSPCertModel.getCertificates({
+            envId : this._envId,
+        });
+    }
+
     async uploadServerCertificates(body) {
         return this._mcmClientDFSPCertModel.uploadServerCertificates({
             envId : this._envId,
             entry: body,
         });
     }
-    
+
     async uploadClientCSR(envId, body) {
         return this._mcmClientDFSPCertModel.createCSR({
             envId : this._envId,
