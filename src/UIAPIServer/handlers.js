@@ -12,10 +12,9 @@ const {
     Transfer,
     Balances,
     DFSP,
+    Hub,
     CertificatesModel,
 } = require('@internal/model');
-
-
 
 
 const healthCheck = async(ctx) => {
@@ -108,15 +107,54 @@ const getDFSPDetails = async(ctx) => {
     ctx.response.body = await dfsp.getDfspDetails();
 };
 
+const getDFSPEndpoints = async(ctx) => {
+    const { direction, type, state } = ctx.state.path.params;
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const dfsp = new DFSP({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.state.path.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.response.status = 200;
+    ctx.response.body = await dfsp.getEndpoints({ direction, type, state });
+};
+
+const createDFSPEndpoints = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const dfsp = new DFSP({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.state.path.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.response.status = 200;
+    ctx.response.body = await dfsp.createEndpoints(ctx.request.body);
+};
+
+const getHubEndpoints = async(ctx) => {
+    const { direction, type, state } = ctx.state.path.params;
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const hub = new Hub({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.state.path.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.response.status = 200;
+    ctx.response.body = await hub.getEndpoints({ direction, type, state });
+};
+
 const uploadServerCertificates = async(ctx) => {
     const { dfspId, mcmServerEndpoint } = ctx.state.conf;
     const certModel = new CertificatesModel({
         dfspId,
         mcmServerEndpoint,
+        envId: ctx.state.path.params.envId,
         logger: ctx.state.logger,
     });
     ctx.response.status = 200;
-    ctx.response.body = await certModel.uploadServerCertificates(ctx.state.path.params.envId, ctx.request.body);
+    ctx.response.body = await certModel.uploadServerCertificates(ctx.request.body);
 };
 
 const uploadClientCSR = async(ctx) => {
@@ -124,11 +162,12 @@ const uploadClientCSR = async(ctx) => {
     const certModel = new CertificatesModel({
         dfspId,
         mcmServerEndpoint,
+        envId: ctx.state.path.params.envId,
         logger: ctx.state.logger,
     });
     ctx.response.status = 200;
     console.log(`data in uploadClientCSR in handler: ${ctx.request.body.clientCSR}`);
-    ctx.response.body = await certModel.uploadClientCSR(ctx.state.path.params.envId, ctx.request.body.clientCSR);
+    ctx.response.body = await certModel.uploadClientCSR(ctx.request.body.clientCSR);
 };
 
 
@@ -159,6 +198,13 @@ module.exports = {
     },
     '/dfsps/{dfspId}': {
         get: getDFSPDetails,
+    },
+    '/environments/{envId}/dfsp/endpoints': {
+        get: getDFSPEndpoints,
+        post: createDFSPEndpoints,
+    },
+    '/environments/{envId}/hub/endpoints': {
+        get: getHubEndpoints,
     },
     '/environments/{envId}/dfsp/servercerts': {
         post: uploadServerCertificates,

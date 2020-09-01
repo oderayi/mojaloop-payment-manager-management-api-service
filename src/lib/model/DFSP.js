@@ -8,7 +8,7 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                   *
  **************************************************************************/
 
-const { DFSPEnvConfigModel } = require('@modusbox/mcm-client');
+const { DFSPEnvConfigModel, DFSPEndpointModel } = require('@modusbox/mcm-client');
 
 class DFSP {
     constructor(opts) {
@@ -16,6 +16,11 @@ class DFSP {
         this._envId = opts.envId;
         this._dfspId = opts.dfspId;
         this._mcmDFSPEnvConfigModel = new DFSPEnvConfigModel({
+            dfspId: opts.dfspId,
+            logger: opts.logger,
+            hubEndpoint: opts.mcmServerEndpoint,
+        });
+        this._endpointModel = new DFSPEndpointModel({
             dfspId: opts.dfspId,
             logger: opts.logger,
             hubEndpoint: opts.mcmServerEndpoint,
@@ -36,6 +41,36 @@ class DFSP {
             envId : this._envId
         });
         return fspList.filter(fsp => fsp.id === this._dfspId)[0];
+    }
+
+    /**
+     *
+     * @param opts {Object}
+     * @param [opts.direction] {string}
+     * @param [opts.type] {string}
+     * @param [opts.state] {string}
+     */
+    async getEndpoints(opts) {
+        return this._endpointModel.findAll({
+            envId : this._envId,
+            ...opts,
+        });
+    }
+
+    /**
+     * Creates dfsp endpoint item
+     *
+     * @param opts {Object}
+     * @param opts.direction {Enum 'INGRESS' or 'EGRESS'}
+     * @param opts.type {Enum 'IP' or 'URL'}
+     * @param [opts.ports] {Array<number>}
+     * @param opts.address {string}
+     */
+    async createEndpoints(opts) {
+        return this._endpointModel.create({
+            envId : this._envId,
+            ...opts,
+        });
     }
 
 }

@@ -8,32 +8,34 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                   *
  **************************************************************************/
 
-const { DFSPCertificateModel } = require('@modusbox/mcm-client');
+const { HubEndpointModel } = require('@modusbox/mcm-client');
 
-class CertificatesModel {
+class Hub {
     constructor(opts) {
         this._logger = opts.logger;
-        this._envId = opts.envId;
-        this._mcmClientDFSPCertModel = new DFSPCertificateModel({
+        this._envId = opts.conf.envId;
+        this._dfspId = opts.conf.dfspId;
+        this._endpointModel = new HubEndpointModel({
             dfspId: opts.dfspId,
             logger: opts.logger,
             hubEndpoint: opts.mcmServerEndpoint,
         });
     }
 
-    async uploadServerCertificates(body) {
-        return this._mcmClientDFSPCertModel.uploadServerCertificates({
+    /**
+     *
+     * @param opts {Object}
+     * @param [opts.direction] {string}
+     * @param [opts.type] {string}
+     * @param [opts.state] {string}
+     */
+    async getEndpoints(opts) {
+        return this._endpointModel.findAll({
             envId : this._envId,
-            entry: body,
+            ...opts,
         });
     }
-    
-    async uploadClientCSR(envId, body) {
-        return this._mcmClientDFSPCertModel.createCSR({
-            envId : this._envId,
-            csr: body,
-        });
-    }
+
 }
 
-module.exports = CertificatesModel;
+module.exports = Hub;
