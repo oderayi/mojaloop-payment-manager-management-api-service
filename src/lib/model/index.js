@@ -11,11 +11,13 @@
 const Transfer = require('./Transfer');
 const Balances = require('./Balances');
 const DFSP = require('./DFSP');
+const Hub = require('./Hub');
 const CertificatesModel = require('./CertificatesModel');
 
 module.exports = {
     Transfer,
     Balances,
     DFSP,
+    Hub,
     CertificatesModel,
 };
