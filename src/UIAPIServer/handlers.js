@@ -97,8 +97,9 @@ const getBalances = async(ctx) => {
 };
 
 const getDFSPDetails = async(ctx) => {
-    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const { envId, dfspId, mcmServerEndpoint } = ctx.state.conf;
     const dfsp = new DFSP({
+        envId,
         dfspId,
         mcmServerEndpoint,
         logger: ctx.state.logger,
@@ -126,6 +127,7 @@ const uploadClientCSR = async(ctx) => {
         logger: ctx.state.logger,
     });
     ctx.response.status = 200;
+    console.log(`data in uploadClientCSR in handler: ${ctx.request.body.clientCSR}`);
     ctx.response.body = await certModel.uploadClientCSR(ctx.state.path.params.envId, ctx.request.body.clientCSR);
 };
 

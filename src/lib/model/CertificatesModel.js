@@ -28,6 +28,7 @@ class CertificatesModel {
     }
 
     async uploadClientCSR(envId, body) {
+        console.log(`data in Certificates Model: ${body}`);
         return this._mcmClientDFSPCertModel.createCSR({
             envId,
             csr: body

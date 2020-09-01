@@ -13,8 +13,8 @@ const { DFSPEnvConfigModel } = require('@modusbox/mcm-client');
 class DFSP {
     constructor(opts) {
         this._logger = opts.logger;
-        this._envId = opts.conf.envId;
-        this._dfspId = opts.conf.dfspId;
+        this._envId = opts.envId;
+        this._dfspId = opts.dfspId;
         this._mcmDFSPEnvConfigModel = new DFSPEnvConfigModel({
             dfspId: opts.dfspId,
             logger: opts.logger,
