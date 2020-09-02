@@ -9,22 +9,18 @@
  **************************************************************************/
 
 const Koa = require('koa');
+const bodyParser = require('koa-bodyparser');
+const { oas } = require('koa-oas3');
 
 const http = require('http');
-const yaml = require('js-yaml');
-const fs = require('fs');
 const path = require('path');
+const { MCMStateModel, Storage } = require('@modusbox/mcm-client');
 
 const { Logger, Transports } = require('@internal/log');
 
-const Validate = require('@internal/validate');
 const database = require('@internal/database');
-const router = require('@internal/router');
 const handlers = require('./handlers');
 const middlewares = require('./middlewares');
-const { MCMStateModel, Storage } = require('@modusbox/mcm-client');
-const { dfspId } = require('../config');
-const { throws } = require('assert');
 
 class UIAPIServer {
     constructor(conf) {
@@ -37,47 +33,54 @@ class UIAPIServer {
     async setupApi() {
         this._api = new Koa();
         this._logger = await this._createLogger();
-        const specPath = path.join(__dirname, 'api.yaml');
-        const apiSpecs = yaml.load(fs.readFileSync(specPath));
-        const validator = new Validate();
-        await validator.initialise(apiSpecs);
+        let validator;
+        try {
+            validator = await oas({
+                file: path.join(__dirname, 'api.yaml'),
+                endpoint: '/openapi.json',
+                uiEndpoint: '/',
+            });
+        } catch (e) {
+            throw new Error('Error loading API spec. Please validate it with https://editor.swagger.io/');
+        }
 
         this._db = await database({
             ...this._conf,
             logger: this._logger,
         });
 
-        this._api.use(middlewares.createErrorHandler());
-        this._api.use(middlewares.createHeaderValidator(this._logger));
-        const sharedState = { conf: this._conf };
-        this._api.use(middlewares.createLogger(this._logger, sharedState));
-        this._api.use(middlewares.createRequestValidator(validator));
         this._api.use(async (ctx, next) => {
-            ctx.state.db = this._db;
+            ctx.state = {
+                conf: this._conf,
+                db: this._db,
+            };
             await next();
         });
-        this._api.use(router(handlers));
-        this._api.use(middlewares.createResponseBodyHandler());
+        this._api.use(middlewares.createErrorHandler());
+        this._api.use(middlewares.createLogger(this._logger));
+        this._api.use(bodyParser());
+        this._api.use(validator);
+        this._api.use(middlewares.createRouter(handlers));
 
         this._server = this._createServer();
 
         // Code to setup mcm client
-        const storage = new Storage.File({ dirName: this._conf.mcmClientSecretsLocation });
-        const mcmState = new MCMStateModel({
+        this._storage = new Storage.File({ dirName: this._conf.mcmClientSecretsLocation });
+        this._mcmState = new MCMStateModel({
             dfspId: this._conf.dfspId,
             envId: this._conf.envId,
             hubEndpoint: this._conf.mcmServerEndpoint,
             refreshIntervalSeconds: this._conf.mcmClientRefreshInternal,
-            storage,
+            storage: this._storage,
             logger: this._logger,
         });
-        await mcmState.start();
 
         return this._server;
     }
 
     async start() {
         await new Promise((resolve) => this._server.listen(this._conf.inboundPort, resolve));
+        await this._mcmState.start();
         this._logger.log(`Serving inbound API on port ${this._conf.inboundPort}`);
 
     }
