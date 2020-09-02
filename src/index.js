@@ -12,9 +12,7 @@
 
 const config = require('./config');
 const UIAPIServer = require('./UIAPIServer');
-const UIAPIServerMiddleware = require('./UIAPIServer/middlewares.js');
-const Router = require('@internal/router');
-const Validate = require('@internal/validate');
+const UIAPIServerMiddleware = require('./UIAPIServer/middlewares');
 const RandomPhrase = require('@internal/randomphrase');
 const Log = require('@internal/log');
 
@@ -76,8 +74,6 @@ if(require.main === module) {
 module.exports = {
     Server: Server,
     UIAPIServerMiddleware: UIAPIServerMiddleware,
-    Router: Router,
-    Validate: Validate,
     RandomPhrase: RandomPhrase,
     Log: Log
 };

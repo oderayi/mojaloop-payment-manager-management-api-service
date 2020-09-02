@@ -18,8 +18,7 @@ const {
 
 
 const healthCheck = async(ctx) => {
-    ctx.response.status = 200;
-    ctx.response.body = JSON.stringify({'status':'ok'});
+    ctx.body = JSON.stringify({'status':'ok'});
 };
 
 const getTransfers = async (ctx) => {
@@ -28,8 +27,7 @@ const getTransfers = async (ctx) => {
         db: ctx.state.db,
         logger: ctx.state.logger,
     });
-    ctx.response.status = 200;
-    ctx.response.body = await transfer.findAll({ startTimestamp, endTimestamp, institution, status, batchId, limit, offset });
+    ctx.body = await transfer.findAll({ startTimestamp, endTimestamp, institution, status, batchId, limit, offset });
 };
 
 const getTransfer = async (ctx) => {
@@ -37,8 +35,7 @@ const getTransfer = async (ctx) => {
         db: ctx.state.db,
         logger: ctx.state.logger,
     });
-    ctx.response.status = 200;
-    ctx.response.body = await transfer.findOne(ctx.state.path.params.transferId);
+    ctx.body = await transfer.findOne(ctx.params.transferId);
 };
 
 const getTransferStatusSummary = async (ctx) => {
@@ -47,41 +44,37 @@ const getTransferStatusSummary = async (ctx) => {
         db: ctx.state.db,
         logger: ctx.state.logger,
     });
-    ctx.response.status = 200;
-    ctx.response.body = await transfer.statusSummary({ startTimestamp, endTimestamp });
+    ctx.body = await transfer.statusSummary({ startTimestamp, endTimestamp });
 };
 
 const getHourlyFlow = async (ctx) => {
-    const { hoursPrevious } = ctx.state.path.params;
+    const { hoursPrevious } = ctx.params;
     const transfer = new Transfer({
         db: ctx.state.db,
         logger: ctx.state.logger,
         conf: ctx.state.conf,
     });
-    ctx.response.status = 200;
-    ctx.response.body = await transfer.hourlyFlow({ hoursPrevious });
+    ctx.body = await transfer.hourlyFlow({ hoursPrevious });
 };
 
 const getTransfersSuccessRate = async (ctx) => {
-    const { minutePrevious } = ctx.state.path.params;
+    const { minutePrevious } = ctx.params;
     const transfer = new Transfer({
         db: ctx.state.db,
         logger: ctx.state.logger,
         conf: ctx.state.conf,
     });
-    ctx.response.status = 200;
-    ctx.response.body = await transfer.successRate({ minutePrevious });
+    ctx.body = await transfer.successRate({ minutePrevious });
 };
 
 const getTransfersAvgResponseTime = async (ctx) => {
-    const { minutePrevious } = ctx.state.path.params;
+    const { minutePrevious } = ctx.params;
     const transfer = new Transfer({
         db: ctx.state.db,
         logger: ctx.state.logger,
         conf: ctx.state.conf,
     });
-    ctx.response.status = 200;
-    ctx.response.body = transfer.avgResponseTime({ minutePrevious });
+    ctx.body = transfer.avgResponseTime({ minutePrevious });
 };
 
 const getBalances = async(ctx) => {
@@ -91,8 +84,7 @@ const getBalances = async(ctx) => {
         mcmServerEndpoint,
         logger: ctx.state.logger,
     });
-    ctx.response.status = 200;
-    ctx.response.body = await balances.findBalances(ctx.request.query);
+    ctx.body = await balances.findBalances(ctx.request.query);
 };
 
 const getDFSPDetails = async(ctx) => {
@@ -103,21 +95,19 @@ const getDFSPDetails = async(ctx) => {
         mcmServerEndpoint,
         logger: ctx.state.logger,
     });
-    ctx.response.status = 200;
-    ctx.response.body = await dfsp.getDfspDetails();
+    ctx.body = await dfsp.getDfspDetails();
 };
 
 const getDFSPEndpoints = async(ctx) => {
-    const { direction, type, state } = ctx.state.path.params;
+    const { direction, type, state } = ctx.params;
     const { dfspId, mcmServerEndpoint } = ctx.state.conf;
     const dfsp = new DFSP({
         dfspId,
         mcmServerEndpoint,
-        envId: ctx.state.path.params.envId,
+        envId: ctx.params.envId,
         logger: ctx.state.logger,
     });
-    ctx.response.status = 200;
-    ctx.response.body = await dfsp.getEndpoints({ direction, type, state });
+    ctx.body = await dfsp.getEndpoints({ direction, type, state });
 };
 
 const createDFSPEndpoints = async(ctx) => {
@@ -125,24 +115,22 @@ const createDFSPEndpoints = async(ctx) => {
     const dfsp = new DFSP({
         dfspId,
         mcmServerEndpoint,
-        envId: ctx.state.path.params.envId,
+        envId: ctx.params.envId,
         logger: ctx.state.logger,
     });
-    ctx.response.status = 200;
-    ctx.response.body = await dfsp.createEndpoints(ctx.request.body);
+    ctx.body = await dfsp.createEndpoints(ctx.request.body);
 };
 
 const getHubEndpoints = async(ctx) => {
-    const { direction, type, state } = ctx.state.path.params;
+    const { direction, type, state } = ctx.params;
     const { dfspId, mcmServerEndpoint } = ctx.state.conf;
     const hub = new Hub({
         dfspId,
         mcmServerEndpoint,
-        envId: ctx.state.path.params.envId,
+        envId: ctx.params.envId,
         logger: ctx.state.logger,
     });
-    ctx.response.status = 200;
-    ctx.response.body = await hub.getEndpoints({ direction, type, state });
+    ctx.body = await hub.getEndpoints({ direction, type, state });
 };
 
 const uploadServerCertificates = async(ctx) => {
@@ -150,11 +138,10 @@ const uploadServerCertificates = async(ctx) => {
     const certModel = new CertificatesModel({
         dfspId,
         mcmServerEndpoint,
-        envId: ctx.state.path.params.envId,
+        envId: ctx.params.envId,
         logger: ctx.state.logger,
     });
-    ctx.response.status = 200;
-    ctx.response.body = await certModel.uploadServerCertificates(ctx.request.body);
+    ctx.body = await certModel.uploadServerCertificates(ctx.request.body);
 };
 
 const uploadClientCSR = async(ctx) => {
@@ -162,12 +149,11 @@ const uploadClientCSR = async(ctx) => {
     const certModel = new CertificatesModel({
         dfspId,
         mcmServerEndpoint,
-        envId: ctx.state.path.params.envId,
+        envId: ctx.params.envId,
         logger: ctx.state.logger,
     });
-    ctx.response.status = 200;
     console.log(`data in uploadClientCSR in handler: ${ctx.request.body.clientCSR}`);
-    ctx.response.body = await certModel.uploadClientCSR(ctx.request.body.clientCSR);
+    ctx.body = await certModel.uploadClientCSR(ctx.request.body.clientCSR);
 };
 
 const getClientCertificates = async(ctx) => {
@@ -175,11 +161,10 @@ const getClientCertificates = async(ctx) => {
     const certModel = new CertificatesModel({
         dfspId,
         mcmServerEndpoint,
-        envId: ctx.state.path.params.envId,
+        envId: ctx.params.envId,
         logger: ctx.state.logger,
     });
-    ctx.response.status = 200;
-    ctx.response.body = await certModel.getCertificates();
+    ctx.body = await certModel.getCertificates();
 };
 
 

@@ -13,7 +13,7 @@ paths:
         200:
           description: Returns empty body if the scheme adapter outbound transfers service is running.
 
-  /dfsps/{dfspId}:
+  /dfsps:
     get:
       summary: Provide details of FSP based on the ID
       operationId: getFSPDetails
@@ -156,39 +156,49 @@ paths:
       description: "Adds the entry with state NEW"
       operationId: "createDFSPIngressIp"
       parameters:
-        - in: "body"
-          name: "body"
-          description: "DFSP entry"
+        - name: envId
+          in: path
+          description: ID of environment
           required: true
           schema:
-            oneOf:
-              - $ref: "#/components/schemas/InputIPValue"
-              - $ref: "#/components/schemas/InputURLValue"
+            type: string
+      requestBody:
+        description: DFSP entry
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/InputIPValue"
+                - $ref: "#/components/schemas/InputURLValue"
       responses:
         200:
           description: "successful operation"
-          schema:
-            $ref: "#/components/schemas/EndPointIp"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndPointAny'
       x-swagger-router-controller: "DfspNetworkConfig"
     get:
       tags:
         - "DFSP-Endpoint-configuration"
       summary: "Get the DFSP endpoints"
       description: ""
-      operationId: "getDFSPIngressIps"
+      operationId: "getDFSPEndpoint"
       parameters:
-        - name: "envId"
-          in: "path"
-          description: "ID of environment"
+        - name: envId
+          in: path
+          description: ID of environment
           required: true
-          type: "string"
+          schema:
+            type: integer
       responses:
         200:
           description: "successful operation"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/components/schemas/EndPointIp"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndPointAny'
       x-swagger-router-controller: "DfspNetworkConfig"
 
   /environments/{envId}/hub/endpoints:
@@ -197,20 +207,21 @@ paths:
         - "DFSP-Endpoint-configuration"
       summary: "Get the Hub endpoints"
       description: ""
-      operationId: "getDFSPIngressIps"
+      operationId: "getHubEndpoints"
       parameters:
-        - name: "envId"
-          in: "path"
-          description: "ID of environment"
+        - name: envId
+          in: path
+          description: ID of environment
           required: true
-          type: "string"
+          schema:
+            type: string
       responses:
         200:
           description: "successful operation"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/components/schemas/EndPointIp"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndPointAny'
       x-swagger-router-controller: "DfspNetworkConfig"
 
   /transferStatusSummary:
@@ -283,7 +294,12 @@ paths:
       description: TBD
       operationId: createDfspServerCerts
       requestBody:
-        $ref: "#/components/schemas/BaseServerCert"
+        description: Certificate
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaseServerCert'
       responses:
         "200":
           description: successful operation
@@ -307,7 +323,12 @@ paths:
       description: TBD
       operationId: createDfspClientCerts
       requestBody:
-        $ref: "#/components/schemas/BaseClientCSR"
+        description: Client CSR
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaseClientCSR'
       responses:
         "200":
           description: successful operation
@@ -326,10 +347,10 @@ components:
         status:
           type: string
           enum:
-          - OPEN
-          - ON TRACK
-          - HAS ERRORS
-          - OVERDUE
+            - OPEN
+            - ON TRACK
+            - HAS ERRORS
+            - OVERDUE
         transferCount:
           type: integer
         transferTotals:
@@ -359,8 +380,8 @@ components:
         direction:
           type: string
           enum:
-          - INBOUND
-          - OUTBOUND
+            - INBOUND
+            - OUTBOUND
         currency:
           $ref: '#/components/schemas/Currency'
         amount:
@@ -368,7 +389,7 @@ components:
         type:
           type: string
           enum:
-          - P2P
+            - P2P
         status:
           $ref: "#/components/schemas/TransferStatus"
         initiatedTimestamp:
@@ -407,12 +428,12 @@ components:
         direction:
           type: string
           enum:
-          - INBOUND
-          - OUTBOUND
+            - INBOUND
+            - OUTBOUND
         type:
           type: string
           enum:
-          - P2P
+            - P2P
         currency:
           $ref: '#/components/schemas/Currency'
         value:
@@ -420,7 +441,7 @@ components:
         errorType:
           type: string
           enum:
-          - FROM HUB
+            - FROM HUB
         committedDate:
           $ref: '#/components/schemas/Timestamp'
     Balances:
@@ -464,8 +485,8 @@ components:
         direction:
           type: string
           enum:
-          - INBOUND
-          - OUTBOUND
+            - INBOUND
+            - OUTBOUND
         currency:
           $ref: '#/components/schemas/Currency'
         amount:
@@ -473,7 +494,7 @@ components:
         type:
           type: string
           enum:
-          - P2P
+            - P2P
         status:
           $ref: "#/components/schemas/TransferStatus"
         initiatedTimestamp:
