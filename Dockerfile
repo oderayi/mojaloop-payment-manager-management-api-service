@@ -19,8 +19,6 @@ COPY ./src/lib/log/package.json ./lib/log/package.json
 COPY ./src/lib/model/package.json ./lib/model/package.json
 COPY ./src/lib/randomphrase/package.json ./lib/randomphrase/package.json
 COPY ./src/lib/requests/package.json ./lib/requests/package.json
-COPY ./src/lib/router/package.json ./lib/router/package.json
-COPY ./src/lib/validate/package.json ./lib/validate/package.json
 RUN npm install --only=production
 RUN rm -f ./.npmrc
 
