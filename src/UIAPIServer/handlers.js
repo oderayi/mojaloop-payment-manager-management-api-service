@@ -152,7 +152,6 @@ const uploadClientCSR = async(ctx) => {
         envId: ctx.params.envId,
         logger: ctx.state.logger,
     });
-    console.log(`data in uploadClientCSR in handler: ${ctx.request.body.clientCSR}`);
     ctx.body = await certModel.uploadClientCSR(ctx.request.body.clientCSR);
 };
 

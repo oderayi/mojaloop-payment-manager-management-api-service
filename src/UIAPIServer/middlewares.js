@@ -12,6 +12,7 @@ const util = require('util');
 const Router = require('koa-router');
 
 const randomPhrase = require('@internal/randomphrase');
+const { HTTPResponseError } = require('@modusbox/mcm-client');
 
 /**
  * Log raw to console as a last resort
@@ -65,7 +66,18 @@ const createRouter = (handlerMap) => {
     for (const [endpoint, methods] of Object.entries(handlerMap)) {
         const koaEndpoint = endpoint.replace('{', ':').replace('}', '');
         for (const [method, handler] of Object.entries(methods)) {
-            router[method](koaEndpoint, handler);
+            router[method](koaEndpoint, async (ctx, next) => {
+                try {
+                    await Promise.resolve(handler(ctx, next));
+                } catch (e) {
+                    if (e instanceof HTTPResponseError) {
+                        ctx.body = e.toJSON();
+                        ctx.status = 500;
+                    } else {
+                        throw e;
+                    }
+                }
+            });
         }
     }
     return router.routes();
