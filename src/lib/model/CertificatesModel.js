@@ -37,7 +37,7 @@ class CertificatesModel {
         });
     }
 
-    async uploadClientCSR(envId, body) {
+    async uploadClientCSR(body) {
         return this._mcmClientDFSPCertModel.createCSR({
             envId : this._envId,
             csr: body,

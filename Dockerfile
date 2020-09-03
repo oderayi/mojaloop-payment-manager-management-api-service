@@ -1,4 +1,4 @@
-FROM node:12.18.3-alpine as builder
+FROM node:lts-alpine as builder
 
 RUN apk add --no-cache git python build-base
 
@@ -22,7 +22,7 @@ COPY ./src/lib/requests/package.json ./lib/requests/package.json
 RUN npm install --only=production
 RUN rm -f ./.npmrc
 
-FROM node:12.18.3-alpine
+FROM node:lts-alpine
 
 ARG BUILD_DATE
 ARG VCS_URL
