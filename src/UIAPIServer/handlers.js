@@ -48,7 +48,7 @@ const getTransferStatusSummary = async (ctx) => {
 };
 
 const getHourlyFlow = async (ctx) => {
-    const { hoursPrevious } = ctx.params;
+    const { hoursPrevious } = ctx.query;
     const transfer = new Transfer({
         db: ctx.state.db,
         logger: ctx.state.logger,
@@ -58,7 +58,7 @@ const getHourlyFlow = async (ctx) => {
 };
 
 const getTransfersSuccessRate = async (ctx) => {
-    const { minutePrevious } = ctx.params;
+    const { minutePrevious } = ctx.query;
     const transfer = new Transfer({
         db: ctx.state.db,
         logger: ctx.state.logger,
@@ -68,7 +68,7 @@ const getTransfersSuccessRate = async (ctx) => {
 };
 
 const getTransfersAvgResponseTime = async (ctx) => {
-    const { minutePrevious } = ctx.params;
+    const { minutePrevious } = ctx.query;
     const transfer = new Transfer({
         db: ctx.state.db,
         logger: ctx.state.logger,
@@ -99,7 +99,7 @@ const getDFSPDetails = async(ctx) => {
 };
 
 const getDFSPEndpoints = async(ctx) => {
-    const { direction, type, state } = ctx.params;
+    const { direction, type, state } = ctx.query;
     const { dfspId, mcmServerEndpoint } = ctx.state.conf;
     const dfsp = new DFSP({
         dfspId,
@@ -122,7 +122,7 @@ const createDFSPEndpoints = async(ctx) => {
 };
 
 const getHubEndpoints = async(ctx) => {
-    const { direction, type, state } = ctx.params;
+    const { direction, type, state } = ctx.query;
     const { dfspId, mcmServerEndpoint } = ctx.state.conf;
     const hub = new Hub({
         dfspId,
@@ -192,7 +192,7 @@ module.exports = {
     '/balances': {
         get: getBalances,
     },
-    '/dfsps/{dfspId}': {
+    '/dfsps': {
         get: getDFSPDetails,
     },
     '/environments/{envId}/dfsp/endpoints': {
