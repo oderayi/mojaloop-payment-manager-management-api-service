@@ -168,9 +168,21 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-                - $ref: "#/components/schemas/InputIPValue"
-                - $ref: "#/components/schemas/InputURLValue"
+              type: object
+              properties:
+                type:
+                  type: "string"
+                  enum:
+                    - "IP"
+                    - "URL"
+                direction:
+                  type: "string"
+                  enum:
+                    - "INGRESS"
+                    - "EGRESS"
+              allOf:
+                - $ref: "#/components/schemas/IPEntry"
+                - $ref: "#/components/schemas/URLEntry"
       responses:
         200:
           description: "successful operation"
