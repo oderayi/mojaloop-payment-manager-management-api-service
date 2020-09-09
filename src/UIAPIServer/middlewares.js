@@ -52,7 +52,7 @@ const createLogger = (logger) => async (ctx, next) => {
     try {
         await next();
     } catch (err) {
-        await ctx.state.logger.push(err).log('Error');
+        console.log(`Error caught in createLogger: ${err.stack || util.inspect(err, { depth: 10 })}`);
     }
     await ctx.state.logger.log('Request processed');
 };
@@ -70,12 +70,14 @@ const createRouter = (handlerMap) => {
                 try {
                     await Promise.resolve(handler(ctx, next));
                 } catch (e) {
-                    if (e instanceof HTTPResponseError) {
-                        ctx.body = e.toJSON();
-                        ctx.status = 500;
-                    } else {
-                        throw e;
-                    }
+                    ctx.body = e.message;
+                    ctx.status = 500;
+                    // if (e instanceof HTTPResponseError) {
+                    // ctx.body = e.toJSON();
+                    // ctx.status = 500;
+                    // } else {
+                    //     throw e;
+                    // }
                 }
             });
         }

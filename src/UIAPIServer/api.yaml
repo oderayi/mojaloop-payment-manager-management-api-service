@@ -260,7 +260,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/EndPointAny'
       x-swagger-router-controller: "DfspNetworkConfig"
-
+  /environments/{envId}/hub/servercerts:
+    parameters:
+      - name: envId
+        in: path
+        description: ID of environment
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - Hub-server-certificates-configuration
+      summary: get hub server certificate
+      description: TBD
+      operationId: getHubServerCerts
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseServerCert"
+      x-swagger-router-controller: HubServerCerts
   /transferStatusSummary:
     get:
       summary: Retrieves transfers status summary
@@ -373,6 +394,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServerCert"
+      x-swagger-router-controller: DfspServerCerts
+    get:
+      tags:
+        - DFSP-client-certificates-configuration
+      summary: get client certificates
+      description: TBD
+      operationId: getDfspClientCSR
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ServerCert"
       x-swagger-router-controller: DfspServerCerts
 components:
   schemas:
@@ -808,6 +845,82 @@ components:
               $ref: "#/components/schemas/ValidationState"
             state:
               $ref: "#/components/schemas/ValidInvalidState"
+    ClientCertificate:
+      type: object
+      properties:
+        certificate:
+          type: string
+          description: PEM encoded
+        csr:
+          type: string
+          description: PEM encoded
+        state:
+          type: string
+          enum:
+            - NEW
+            - CSR_LOADED
+            - CERT_SIGNED
+            - INVALID
+        certInfo:
+          $ref: '#/components/schemas/CertInfo'
+        csrInfo:
+          $ref: '#/components/schemas/CSRInfo'
+        hubCAId:
+          type: integer
+          description: Hub CA Id
+    CSRInfo:
+      type: object
+      description: CSR contents and info
+      properties:
+        subject:
+          type: object
+          properties:
+            CN:
+              type: string
+              description: Common Name
+            emailAddress:
+              type: string
+              description: email address
+            O:
+              type: string
+              description: Organization
+            OU:
+              type: string
+              description: Organizational Unit
+            C:
+              type: string
+              description: Country
+            ST:
+              type: string
+              description: State
+            L:
+              type: string
+              description: Location
+        extensions:
+          type: object
+          properties:
+            subjectAltName:
+              type: object
+              properties:
+                dns:
+                  type: array
+                  items:
+                    type: string
+                ips:
+                  type: array
+                  items:
+                    type: string
+                    example: 163.10.5.24
+                emailAddresses:
+                  type: array
+                  items:
+                    type: string
+                    example: pki@modusbox.live
+                uris:
+                  type: array
+                  items:
+                    type: string
+                    example: 'http://modusbox.live'
     CertInfo:
       type: object
       description: Certificate contents and info

@@ -8,14 +8,19 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                   *
  **************************************************************************/
 
-const { HubEndpointModel } = require('@modusbox/mcm-client');
+const { HubEndpointModel,HubCertificateModel } = require('@modusbox/mcm-client');
 
 class Hub {
     constructor(opts) {
         this._logger = opts.logger;
-        this._envId = opts.conf.envId;
-        this._dfspId = opts.conf.dfspId;
+        this._envId = opts.envId;
+        this._dfspId = opts.dfspId;
         this._endpointModel = new HubEndpointModel({
+            dfspId: opts.dfspId,
+            logger: opts.logger,
+            hubEndpoint: opts.mcmServerEndpoint,
+        });
+        this._certificateModel = new HubCertificateModel({
             dfspId: opts.dfspId,
             logger: opts.logger,
             hubEndpoint: opts.mcmServerEndpoint,
@@ -31,6 +36,20 @@ class Hub {
      */
     async getEndpoints(opts) {
         return this._endpointModel.findAll({
+            envId : this._envId,
+            ...opts,
+        });
+    }
+
+    /**
+     *
+     * @param opts {Object}
+     * @param [opts.direction] {string}
+     * @param [opts.type] {string}
+     * @param [opts.state] {string}
+     */
+    async getServerCertificates(opts) {
+        return this._certificateModel.getServerCertificates({
             envId : this._envId,
             ...opts,
         });

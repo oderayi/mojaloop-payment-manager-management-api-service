@@ -133,17 +133,6 @@ const getHubEndpoints = async(ctx) => {
     ctx.body = await hub.getEndpoints({ direction, type, state });
 };
 
-const uploadServerCertificates = async(ctx) => {
-    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
-    const certModel = new CertificatesModel({
-        dfspId,
-        mcmServerEndpoint,
-        envId: ctx.params.envId,
-        logger: ctx.state.logger,
-    });
-    ctx.body = await certModel.uploadServerCertificates(ctx.request.body);
-};
-
 const uploadClientCSR = async(ctx) => {
     const { dfspId, mcmServerEndpoint } = ctx.state.conf;
     const certModel = new CertificatesModel({
@@ -164,6 +153,29 @@ const getClientCertificates = async(ctx) => {
         logger: ctx.state.logger,
     });
     ctx.body = await certModel.getCertificates();
+};
+
+const uploadServerCertificates = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await certModel.uploadServerCertificates(ctx.request.body);
+};
+
+const getHubServerCertificates = async(ctx) => {
+    const { direction, type, state } = ctx.query;
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const hub = new Hub({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await hub.getServerCertificates({ direction, type, state });
 };
 
 
@@ -208,5 +220,8 @@ module.exports = {
     '/environments/{envId}/dfsp/clientcerts': {
         get: getClientCertificates,
         post: uploadClientCSR,
-    }
+    },
+    '/environments/{envId}/hub/servercerts': {
+        get: getHubServerCertificates,
+    },
 };
