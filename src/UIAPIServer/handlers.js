@@ -204,7 +204,7 @@ module.exports = {
     '/balances': {
         get: getBalances,
     },
-    '/dfsps': {
+    '/dfsp': {
         get: getDFSPDetails,
     },
     '/environments/{envId}/dfsp/endpoints': {
