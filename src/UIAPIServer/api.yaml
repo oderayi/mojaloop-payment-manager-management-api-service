@@ -348,6 +348,20 @@ paths:
         required: true
         schema:
           type: string
+    get:
+      tags:
+        - DFSP-server-certs-configuration
+      summary: get dfsp server certs
+      description: TBD
+      operationId: getDfspServerCerts
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerCert"
+      x-swagger-router-controller: DfspCA
     post:
       tags:
         - DFSP-server-certificates-configuration

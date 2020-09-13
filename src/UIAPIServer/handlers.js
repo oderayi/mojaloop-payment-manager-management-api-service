@@ -188,6 +188,21 @@ const getHubCAS = async(ctx) => {
     ctx.body = await hub.getHubCAS();
 };
 
+/**
+ * Get DFSP Server Certificates
+ * @param {*} ctx 
+ */
+const getDFSPServerCertificates = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await certModel.getDFSPServerCertificates();
+};
+
 const uploadServerCertificates = async(ctx) => {
     const { dfspId, mcmServerEndpoint } = ctx.state.conf;
     const certModel = new CertificatesModel({
@@ -248,6 +263,7 @@ module.exports = {
         get: getHubEndpoints,
     },
     '/environments/{envId}/dfsp/servercerts': {
+        get: getDFSPServerCertificates,
         post: uploadServerCertificates,
     },
     '/environments/{envId}/dfsp/clientcerts': {

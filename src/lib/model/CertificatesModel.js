@@ -55,7 +55,16 @@ class CertificatesModel {
             entry: body,
         });
     }
-    
+
+    /**
+     * Get DFSP Server Certificates
+     * @param  
+     */
+    async getDFSPServerCertificates() {
+        return this._mcmClientDFSPCertModel.getDFSPServerCertificates({
+            envId : this._envId,
+        });
+    }
 
     async uploadServerCertificates(body) {
         return this._mcmClientDFSPCertModel.uploadServerCertificates({
