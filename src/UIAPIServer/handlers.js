@@ -155,6 +155,39 @@ const getClientCertificates = async(ctx) => {
     ctx.body = await certModel.getCertificates();
 };
 
+const getDFSPCA = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await certModel.getDFSPCA();
+};
+
+const uploadDFSPCA = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await certModel.uploadDFSPCA(ctx.request.body);
+};
+
+const getHubCAS = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const hub = new Hub({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await hub.getHubCAS();
+};
+
 const uploadServerCertificates = async(ctx) => {
     const { dfspId, mcmServerEndpoint } = ctx.state.conf;
     const certModel = new CertificatesModel({
@@ -220,6 +253,13 @@ module.exports = {
     '/environments/{envId}/dfsp/clientcerts': {
         get: getClientCertificates,
         post: uploadClientCSR,
+    },
+    '/environments/{envId}/dfsp/ca': {
+        get: getDFSPCA,
+        post: uploadDFSPCA,
+    },
+    '/environments/{envId}/hub/cas': {
+        get: getHubCAS,
     },
     '/environments/{envId}/hub/servercerts': {
         get: getHubServerCertificates,

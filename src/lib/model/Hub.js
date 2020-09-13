@@ -42,6 +42,15 @@ class Hub {
     }
 
     /**
+     * Gets Hub CAs
+     */
+    async getHubCAS() {
+        return this._certificateModel.getHubCAS({
+            envId : this._envId,
+        });
+    }
+
+    /**
      *
      * @param opts {Object}
      * @param [opts.direction] {string}

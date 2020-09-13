@@ -21,6 +21,13 @@ class CertificatesModel {
         });
     }
 
+    async uploadClientCSR(body) {
+        return this._mcmClientDFSPCertModel.createCSR({
+            envId : this._envId,
+            csr: body,
+        });
+    }
+
     /**
      * Gets uploaded DFSP CSRs and certificates
      */
@@ -30,6 +37,26 @@ class CertificatesModel {
         });
     }
 
+    /**
+     * Gets uploaded DFSP CA
+     */
+    async getDFSPCA() {
+        return this._mcmClientDFSPCertModel.getDFSPCA({
+            envId : this._envId,
+        });
+    }
+
+    /**
+     * Upload DFSP CA
+     */
+    async uploadDFSPCA(body) {
+        return this._mcmClientDFSPCertModel.uploadDFSPCA({
+            envId : this._envId,
+            entry: body,
+        });
+    }
+    
+
     async uploadServerCertificates(body) {
         return this._mcmClientDFSPCertModel.uploadServerCertificates({
             envId : this._envId,
@@ -37,12 +64,7 @@ class CertificatesModel {
         });
     }
 
-    async uploadClientCSR(body) {
-        return this._mcmClientDFSPCertModel.createCSR({
-            envId : this._envId,
-            csr: body,
-        });
-    }
+    
 }
 
 module.exports = CertificatesModel;

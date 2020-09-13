@@ -340,8 +340,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Balances'
-
-
   /environments/{envId}/dfsp/servercerts:
     parameters:
       - name: envId
@@ -371,6 +369,73 @@ paths:
               schema:
                 $ref: "#/components/schemas/ServerCert"
       x-swagger-router-controller: DfspServerCerts
+  /environments/{envId}/dfsp/ca:
+    parameters:
+      - name: envId
+        in: path
+        description: ID of environment
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - DFSP-client-ca-configuration
+      summary: get dfsp ca
+      description: TBD
+      operationId: getDfspCA
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CAInfo"
+      x-swagger-router-controller: DfspCA
+    post:
+      tags:
+        - DFSP-client-ca-configuration
+      summary: post client ca
+      description: TBD
+      operationId: createDfspClientCA
+      requestBody:
+        description: Client CA
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CAInfo'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CAInfo"
+      x-swagger-router-controller: DfspCA
+  /environments/{envId}/hub/cas:
+    parameters:
+      - name: envId
+        in: path
+        description: ID of environment
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - DFSP-hub-ca-configuration
+      summary: get hub ca
+      description: TBD
+      operationId: getHubCA
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HubCAInfo"
+      x-swagger-router-controller: HubCAS
   /environments/{envId}/dfsp/clientcerts:
     parameters:
       - name: envId
@@ -549,7 +614,47 @@ components:
           $ref: '#/components/schemas/Amount'
         timestamp:
           $ref: '#/components/schemas/Timestamp'
-
+    HubCAInfoInput:
+      type: "object"
+      description: "Hub CA Input Body"
+      required:
+        - name
+        - type
+      properties:
+        rootCertificate:
+          type: "string"
+          description: "PEM-encoded certificate"
+        intermediateChain:
+          type: "string"
+          description: "PEM-encoded certificate"        
+        name:
+          type: "string"
+          description: "Descriptive name. Must be unique in the environment"    
+        type:
+          type: "string"
+          enum:
+          - "EXTERNAL"
+    HubCAInfo:
+      type: "object"
+      description: "Hub CA Input"
+      allOf:
+        - $ref: "#/components/schemas/HubCAInfoInput"
+        - type: object
+          properties:
+            id:
+              type: "integer"
+              format: "int32"
+            rootCertificateInfo:
+              $ref: "#/components/schemas/CertInfo"
+            intermediateChainInfo:
+              type: "array"
+              description: "List of CertInfo."
+              items:
+                $ref: "#/components/schemas/CertInfo"
+            validations:
+              $ref: "#/components/schemas/ValidationList"
+            validationState:
+              $ref: "#/components/schemas/ValidationState"
     DFSPDetails:
       type: object
       properties:
@@ -926,6 +1031,18 @@ components:
                   items:
                     type: string
                     example: 'http://modusbox.live'
+    CAInfo:
+      properties:
+        rootCertificate:
+          type: "string"
+          description: "PEM-encoded certificate"
+        intermediateChain:
+          type: "string"
+          description: "PEM-encoded certificate"        
+        validations:
+          $ref: "#/components/schemas/ValidationList"
+        validationState:
+          $ref: "#/components/schemas/ValidationState"
     CertInfo:
       type: object
       description: Certificate contents and info
