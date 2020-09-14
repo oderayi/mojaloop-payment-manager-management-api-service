@@ -58,7 +58,7 @@ class CertificatesModel {
 
     /**
      * Get DFSP Server Certificates
-     * @param  
+     * @param
      */
     async getDFSPServerCertificates() {
         return this._mcmClientDFSPCertModel.getDFSPServerCertificates({
@@ -73,7 +73,53 @@ class CertificatesModel {
         });
     }
 
-    
+    /**
+     * Gets all JWS certificate
+     */
+    async getAllJWSCertificates() {
+        return this._mcmClientDFSPCertModel.getAllJWSCertificates({
+            envId : this._envId,
+        });
+    }
+
+    /**
+     * Gets uploaded JWS certificate
+     */
+    async getDFSPJWSCertificates() {
+        return this._mcmClientDFSPCertModel.getDFSPJWSCertificates({
+            envId : this._envId,
+        });
+    }
+
+    /**
+     * Upload DFSP JWS
+     */
+    async uploadJWS(body) {
+        return this._mcmClientDFSPCertModel.uploadJWS({
+            envId : this._envId,
+            entry: body,
+        });
+    }
+
+    /**
+     * Update DFSP JWS
+     */
+    async updateJWS(body) {
+        return this._mcmClientDFSPCertModel.updateJWS({
+            envId : this._envId,
+            entry: body,
+        });
+    }
+
+    /**
+     * Delete DFSP JWS
+     */
+    async deleteJWS() {
+        return this._mcmClientDFSPCertModel.deleteJWS({
+            envId : this._envId,
+        });
+    }
+
 }
 
 module.exports = CertificatesModel;

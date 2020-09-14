@@ -52,15 +52,13 @@ class Requests {
         };
 
         // Note we do not JWS sign requests with no body i.e. GET requests
-
-        try {
-            this.logger.push({ reqOpts }).log('Executing HTTP GET');
-            return request({...reqOpts, agent: this.agent}).then(throwOrJson);
-        }
-        catch (e) {
-            this.logger.push({ e }).log('Error attempting HTTP GET');
-            throw e;
-        }
+        this.logger.push({ reqOpts }).log('Executing HTTP GET');
+        return request({...reqOpts, agent: this.agent})
+            .then(throwOrJson)
+            .catch(e => {
+                this.logger.push({ e }).log('Error attempting HTTP GET');
+                throw e;
+            });
     }
 
 
@@ -72,14 +70,13 @@ class Requests {
             body: JSON.stringify(body),
         };
 
-        try {
-            this.logger.push({ reqOpts }).log('Executing HTTP PUT');
-            return request({...reqOpts, agent: this.agent}).then(throwOrJson);
-        }
-        catch (e) {
-            this.logger.push({ e }).log('Error attempting HTTP PUT');
-            throw e;
-        }
+        this.logger.push({ reqOpts }).log('Executing HTTP PUT');
+        return request({...reqOpts, agent: this.agent})
+            .then(throwOrJson)
+            .catch(e => {
+                this.logger.push({ e }).log('Error attempting HTTP PUT');
+                throw e;
+            });
     }
 
 
@@ -91,14 +88,13 @@ class Requests {
             body: JSON.stringify(body),
         };
 
-        try {
-            this.logger.push({ reqOpts }).log('Executing HTTP POST');
-            return request({...reqOpts, agent: this.agent}).then(throwOrJson);
-        }
-        catch (e) {
-            this.logger.push({ e }).log('Error attempting POST.');
-            throw e;
-        }
+        this.logger.push({ reqOpts }).log('Executing HTTP POST');
+        return request({...reqOpts, agent: this.agent})
+            .then(throwOrJson)
+            .catch(e => {
+                this.logger.push({ e }).log('Error attempting POST.');
+                throw e;
+            });
     }
 }
 

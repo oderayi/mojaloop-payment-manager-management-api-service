@@ -190,7 +190,7 @@ const getHubCAS = async(ctx) => {
 
 /**
  * Get DFSP Server Certificates
- * @param {*} ctx 
+ * @param {*} ctx
  */
 const getDFSPServerCertificates = async(ctx) => {
     const { dfspId, mcmServerEndpoint } = ctx.state.conf;
@@ -212,6 +212,61 @@ const uploadServerCertificates = async(ctx) => {
         logger: ctx.state.logger,
     });
     ctx.body = await certModel.uploadServerCertificates(ctx.request.body);
+};
+
+const getAllJWSCertificates = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await certModel.getAllJWSCertificates();
+};
+
+const getJWSCertificates = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await certModel.getDFSPJWSCertificates();
+};
+
+const uploadJWSCertificates = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await certModel.uploadJWS(ctx.request.body);
+};
+
+const updateJWSCertificates = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await certModel.updateJWS(ctx.request.body);
+};
+
+const deleteJWSCertificates = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await certModel.deleteJWS();
 };
 
 const getHubServerCertificates = async(ctx) => {
@@ -265,6 +320,15 @@ module.exports = {
     '/environments/{envId}/dfsp/servercerts': {
         get: getDFSPServerCertificates,
         post: uploadServerCertificates,
+    },
+    '/environments/{envId}/dfsp/alljwscerts': {
+        get: getAllJWSCertificates,
+    },
+    '/environments/{envId}/dfsp/jwscerts': {
+        get: getJWSCertificates,
+        post: uploadJWSCertificates,
+        put: updateJWSCertificates,
+        delete: deleteJWSCertificates,
     },
     '/environments/{envId}/dfsp/clientcerts': {
         get: getClientCertificates,
