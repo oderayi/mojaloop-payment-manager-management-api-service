@@ -73,6 +73,38 @@ class DFSP {
         });
     }
 
+    /**
+     * Update dfsp endpoint item
+     *
+     * @param opts {Object}
+     * @param opts.direction {Enum 'INGRESS' or 'EGRESS'}
+     * @param opts.type {Enum 'IP' or 'URL'}
+     * @param [opts.ports] {Array<number>}
+     * @param opts.address {string}
+     */
+    async updateEndpoint(opts) {
+        return this._endpointModel.update({
+            envId : this._envId,
+            ...opts,
+        });
+    }
+
+    /**
+     * Delete dfsp endpoint item
+     *
+     * @param opts {Object}
+     * @param opts.direction {Enum 'INGRESS' or 'EGRESS'}
+     * @param opts.type {Enum 'IP' or 'URL'}
+     * @param [opts.ports] {Array<number>}
+     * @param opts.address {string}
+     */
+    async deleteEndpoint(opts) {
+        return this._endpointModel.delete({
+            envId : this._envId,
+            ...opts,
+        });
+    }
+
 }
 
 module.exports = DFSP;

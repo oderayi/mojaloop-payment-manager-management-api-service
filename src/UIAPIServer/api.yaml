@@ -227,7 +227,78 @@ paths:
               schema:
                 $ref: '#/components/schemas/EndPointAny'
       x-swagger-router-controller: "DfspNetworkConfig"
-
+  /environments/{envId}/dfsp/endpoints/{epId}:
+    put:
+      tags:
+        - "DFSP-Endpoint-configuration"
+      summary: "Updates existing entry of the DFSP endpoint"
+      description: "Updates existing entry of the DFSP endpoint"
+      operationId: "updateDFSPEndpoint"
+      parameters:
+        - name: envId
+          in: path
+          description: ID of environment
+          required: true
+          schema:
+            type: string
+        - name: epId
+          in: path
+          description: ID of endpoint
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: DFSP entry
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: "string"
+                  enum:
+                    - "IP"
+                    - "URL"
+                direction:
+                  type: "string"
+                  enum:
+                    - "INGRESS"
+                    - "EGRESS"
+              allOf:
+                - $ref: "#/components/schemas/IPEntry"
+                - $ref: "#/components/schemas/URLEntry"
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndPointAny'
+      x-swagger-router-controller: "DfspNetworkConfig"
+    delete:
+      tags:
+        - "DFSP-Endpoint-configuration"
+      summary: "Delete the DFSP endpoints"
+      description: ""
+      operationId: "deleteDFSPEndpoint"
+      parameters:
+        - name: envId
+          in: path
+          description: ID of environment
+          required: true
+          schema:
+            type: integer
+        - name: epId
+          in: path
+          description: ID of endpoint
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: "successful operation"
+      x-swagger-router-controller: "DfspNetworkConfig"
   /environments/{envId}/hub/endpoints:
     get:
       tags:
