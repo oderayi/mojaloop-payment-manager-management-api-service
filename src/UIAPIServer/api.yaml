@@ -228,25 +228,25 @@ paths:
                 $ref: '#/components/schemas/EndPointAny'
       x-swagger-router-controller: "DfspNetworkConfig"
   /environments/{envId}/dfsp/endpoints/{epId}:
+    parameters:
+      - name: envId
+        in: path
+        description: ID of environment
+        required: true
+        schema:
+          type: integer
+      - name: epId
+        in: path
+        description: ID of environment
+        required: true
+        schema:
+          type: integer
     put:
       tags:
         - "DFSP-Endpoint-configuration"
       summary: "Updates existing entry of the DFSP endpoint"
       description: "Updates existing entry of the DFSP endpoint"
       operationId: "updateDFSPEndpoint"
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: string
-        - name: epId
-          in: path
-          description: ID of endpoint
-          required: true
-          schema:
-            type: string
       requestBody:
         description: DFSP entry
         required: true
@@ -278,27 +278,18 @@ paths:
       x-swagger-router-controller: "DfspNetworkConfig"
     delete:
       tags:
-        - "DFSP-Endpoint-configuration"
-      summary: "Delete the DFSP endpoints"
-      description: ""
-      operationId: "deleteDFSPEndpoint"
-      parameters:
-        - name: envId
-          in: path
-          description: ID of environment
-          required: true
-          schema:
-            type: integer
-        - name: epId
-          in: path
-          description: ID of endpoint
-          required: true
-          schema:
-            type: integer
+        - DFSP-jws-certificates-configuration
+      summary: delete JWS certificate
+      description: TBD
+      operationId: deleteDfspEndpoint
       responses:
-        200:
-          description: "successful operation"
-      x-swagger-router-controller: "DfspNetworkConfig"
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JWSCert"
+      x-swagger-router-controller: DfspJWSCerts
   /environments/{envId}/hub/endpoints:
     get:
       tags:

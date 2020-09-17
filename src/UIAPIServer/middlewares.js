@@ -64,7 +64,7 @@ const createLogger = (logger) => async (ctx, next) => {
 const createRouter = (handlerMap) => {
     const router = new Router();
     for (const [endpoint, methods] of Object.entries(handlerMap)) {
-        const koaEndpoint = endpoint.replace('{', ':').replace('}', '');
+        const koaEndpoint = endpoint.replace(/{/g, ':').replace(/}/g, '');
         for (const [method, handler] of Object.entries(methods)) {
             router[method](koaEndpoint, async (ctx, next) => {
                 try {
