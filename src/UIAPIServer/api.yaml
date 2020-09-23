@@ -227,7 +227,63 @@ paths:
               schema:
                 $ref: '#/components/schemas/EndPointAny'
       x-swagger-router-controller: "DfspNetworkConfig"
-
+  /environments/{envId}/dfsp/endpoints/{epId}:
+    parameters:
+      - name: envId
+        in: path
+        description: ID of environment
+        required: true
+        schema:
+          type: integer
+      - name: epId
+        in: path
+        description: ID of environment
+        required: true
+        schema:
+          type: integer
+    put:
+      tags:
+        - "DFSP-Endpoint-configuration"
+      summary: "Updates existing entry of the DFSP endpoint"
+      description: "Updates existing entry of the DFSP endpoint"
+      operationId: "updateDFSPEndpoint"
+      requestBody:
+        description: DFSP entry
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  $ref: "#/components/schemas/EndpointType"
+                direction:
+                  $ref: "#/components/schemas/EndpointDirection"
+              allOf:
+                - $ref: "#/components/schemas/IPEntry"
+                - $ref: "#/components/schemas/URLEntry"
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndPointAny'
+      x-swagger-router-controller: "DfspNetworkConfig"
+    delete:
+      tags:
+        - DFSP-jws-certificates-configuration
+      summary: delete JWS certificate
+      description: TBD
+      operationId: deleteDfspEndpoint
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JWSCert"
+      x-swagger-router-controller: DfspJWSCerts
   /environments/{envId}/hub/endpoints:
     get:
       tags:
