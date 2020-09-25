@@ -14,6 +14,7 @@ const {
     DFSP,
     Hub,
     CertificatesModel,
+    MonetaryZone
 } = require('@internal/model');
 
 
@@ -97,6 +98,19 @@ const getDFSPDetails = async(ctx) => {
     });
     ctx.body = await dfsp.getDfspDetails();
 };
+
+const getDFSPSByMonetaryZone = async(ctx) => {
+    const { envId, dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const dfsp = new DFSP({
+        envId,
+        dfspId,
+        mcmServerEndpoint,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await dfsp.getDfspsByMonetaryZone({monetaryZoneId: ctx.params.monetaryZoneId});
+};
+
+
 
 const getDFSPEndpoints = async(ctx) => {
     const { direction, type, state } = ctx.query;
@@ -314,6 +328,19 @@ const getHubServerCertificates = async(ctx) => {
 };
 
 
+const getMonetaryZones = async(ctx) => {
+    const { mcmServerEndpoint } = ctx.state.conf;
+    
+    const monetaryZone = new MonetaryZone({
+        mcmServerEndpoint,
+        logger: ctx.state.logger,
+    });
+    ctx.response.status = 200;
+    const responseData = await monetaryZone.getMonetaryZones();
+    ctx.body = responseData;
+};
+
+
 module.exports = {
     '/health': {
         get: healthCheck
@@ -380,4 +407,10 @@ module.exports = {
     '/environments/{envId}/hub/servercerts': {
         get: getHubServerCertificates,
     },
+    '/monetaryzones': {
+        get: getMonetaryZones
+    },
+    '/environments/{envId}/monetaryzones/{monetaryZoneId}/dfsps':{
+        get: getDFSPSByMonetaryZone
+    } 
 };

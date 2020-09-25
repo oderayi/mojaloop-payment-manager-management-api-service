@@ -44,6 +44,17 @@ class DFSP {
     }
 
     /**
+     * 
+     * @param [opts.monetaryZoneId] {string}
+     */
+    async getDfspsByMonetaryZone(opts) {
+        return this._mcmDFSPEnvConfigModel.getDFSPListByMonetaryZone({
+            envId : this._envId,
+            ...opts
+        });
+    }    
+
+    /**
      *
      * @param opts {Object}
      * @param [opts.direction] {string}
