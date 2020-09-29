@@ -19,10 +19,43 @@ COPY ./src/lib/log/package.json ./lib/log/package.json
 COPY ./src/lib/model/package.json ./lib/model/package.json
 COPY ./src/lib/randomphrase/package.json ./lib/randomphrase/package.json
 COPY ./src/lib/requests/package.json ./lib/requests/package.json
+# for local testing
+# COPY ./src/lib/mcmclient/package.json ./lib/mcmclient/package.json
 RUN npm install --only=production
 RUN rm -f ./.npmrc
 
 FROM node:lts-alpine
+
+
+# Install cfssl git make
+RUN apk add --no-cache git make musl-dev go
+
+# golang env
+ENV GOPATH /go
+ENV GOROOT /usr/lib/go
+
+ENV PATH /go/bin:$PATH:$GOROOT/bin:$GOPATH/bin/
+
+# Install cfssl with Go and clean up
+RUN rm -rf $GOPATH/src/github.com/cloudflare/cfssl
+
+# WARNING: The next layer will be cached, it won't be re-fetched even if the tag changes on the github repo.
+RUN git clone https://github.com/modusintegration/cfssl.git --branch=v1.3.4 $GOPATH/src/github.com/cloudflare/cfssl
+
+WORKDIR $GOPATH/src/github.com/cloudflare/cfssl
+# home made: build locally
+RUN make
+RUN ls -l bin
+RUN cp bin/* /usr/bin
+# clean up
+RUN rm -rf ${GOROOT} ${GOPATH}
+
+# Check cfssl version
+RUN which cfssl
+RUN cfssl version
+
+# APP
+WORKDIR /
 
 ARG BUILD_DATE
 ARG VCS_URL
