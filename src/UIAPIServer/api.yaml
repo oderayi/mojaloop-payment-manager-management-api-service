@@ -256,15 +256,9 @@ paths:
               type: object
               properties:
                 type:
-                  type: "string"
-                  enum:
-                    - "IP"
-                    - "URL"
+                  $ref: "#/components/schemas/EndpointType"
                 direction:
-                  type: "string"
-                  enum:
-                    - "INGRESS"
-                    - "EGRESS"
+                  $ref: "#/components/schemas/EndpointDirection"
               allOf:
                 - $ref: "#/components/schemas/IPEntry"
                 - $ref: "#/components/schemas/URLEntry"

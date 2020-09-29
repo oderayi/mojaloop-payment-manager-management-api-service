@@ -141,14 +141,14 @@ const createDFSPEndpoints = async(ctx) => {
  */
 const updateDFSPEndpoint = async(ctx) => {
     const { dfspId, mcmServerEndpoint } = ctx.state.conf;
-    const {epId} = ctx.params;
+    const { epId } = ctx.params;
     const dfsp = new DFSP({
         dfspId,
         mcmServerEndpoint,
         envId: ctx.params.envId,
         logger: ctx.state.logger,
     });
-    ctx.body = await dfsp.updateEndpoint({epId, ...ctx.request.body});
+    ctx.body = await dfsp.updateEndpoint({ epId, ...ctx.request.body });
 };
 
 /**
@@ -157,14 +157,14 @@ const updateDFSPEndpoint = async(ctx) => {
  */
 const deleteDFSPEndpoint = async(ctx) => {
     const { dfspId, mcmServerEndpoint } = ctx.state.conf;
-    const {epId} = ctx.params;
+    const { epId } = ctx.params;
     const dfsp = new DFSP({
         dfspId,
         mcmServerEndpoint,
         envId: ctx.params.envId,
         logger: ctx.state.logger,
     });
-    ctx.body = await dfsp.deleteEndpoint({epId});
+    ctx.body = await dfsp.deleteEndpoint({ epId });
 };
 
 const getHubEndpoints = async(ctx) => {
