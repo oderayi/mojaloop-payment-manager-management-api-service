@@ -48,7 +48,7 @@ RUN make
 RUN ls -l bin
 RUN cp bin/* /usr/bin
 # clean up
-RUN rm -rf ${GOROOT} ${GOPATH} 
+RUN rm -rf ${GOROOT} ${GOPATH}
 
 # Check cfssl version
 RUN which cfssl

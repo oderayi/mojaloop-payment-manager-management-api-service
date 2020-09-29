@@ -58,6 +58,7 @@ module.exports = {
     mcmServerEndpoint: env.get('MCM_SERVER_ENDPOINT').required().asString(),
     mcmClientRefreshInternal: env.get('MCM_CLIENT_REFRESH_INTERVAL').default(300).asString(),
     mcmClientSecretsLocation: env.get('MCM_CLIENT_SECRETS_LOCATION').required().asString(),
+    pkSecretsLocation: env.get('PK_SECRETS_LOCATION').required().asString(),
     mcmAPIToken: env.get('MCM_API_TOKEN').required().asString(),
     dfspId: env.get('DFSP_ID').required().asString(),
     envId: env.get('ENV_ID').required().asString(),
