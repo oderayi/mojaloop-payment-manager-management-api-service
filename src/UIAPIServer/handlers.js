@@ -99,6 +99,19 @@ const getDFSPDetails = async(ctx) => {
     ctx.body = await dfsp.getDfspDetails();
 };
 
+const getAllDfsps = async(ctx) => {
+    const { envId, dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const dfsp = new DFSP({
+        envId,
+        dfspId,
+        mcmServerEndpoint,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await dfsp.getAllDfsps();
+};
+
+
+
 const getDFSPSByMonetaryZone = async(ctx) => {
     const { envId, dfspId, mcmServerEndpoint } = ctx.state.conf;
     const dfsp = new DFSP({
@@ -373,6 +386,9 @@ module.exports = {
         get: getDFSPEndpoints,
         post: createDFSPEndpoints,
     },
+    '/environments/{envId}/dfsps': {
+        get: getAllDfsps,
+    },    
     '/environments/{envId}/dfsp/endpoints/{epId}': {
         put: updateDFSPEndpoint,
         delete: deleteDFSPEndpoint,
