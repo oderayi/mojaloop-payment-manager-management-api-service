@@ -60,6 +60,7 @@ module.exports = {
     mcmClientSecretsLocation: env.get('MCM_CLIENT_SECRETS_LOCATION').required().asString(),
     pkSecretsLocation: env.get('PK_SECRETS_LOCATION').required().asString(),
     authEnabled: env.get('AUTH_ENABLED').asBoolStrict(),
+    tlsServerPrivateKey: env.get('TLS_SERVER_PRIVATE_KEY').required().asString(),
     dfspId: env.get('DFSP_ID').required().asString(),
     envId: env.get('ENV_ID').required().asString(),
 };
