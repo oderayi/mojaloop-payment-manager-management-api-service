@@ -27,7 +27,7 @@ describe('Database', () => {
 
     test('Should cache Redis records', async () => {
         const now = Date.now();
-        const createTimestamp = (secondsAdd) => new Date(now + (secondsAdd || 0) * 1e3).toISOString()
+        const createTimestamp = (secondsAdd) => new Date(now + (secondsAdd || 0) * 1e3).toISOString();
         await addTransferToCache(db, {
             currency: 'USD',
             amount: '100',
