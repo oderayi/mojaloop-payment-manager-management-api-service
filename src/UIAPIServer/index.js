@@ -73,7 +73,8 @@ class UIAPIServer {
             refreshIntervalSeconds: this._conf.mcmClientRefreshInternal,
             storage: this._storage,
             logger: this._logger,
-            pkSecretsLocation: this._conf.pkSecretsLocation
+            pkSecretsLocation: this._conf.pkSecretsLocation,
+            authEnabled: this._conf.authEnabled,
         });
 
         return this._server;
