@@ -14,7 +14,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run lint"
+      "pre-commit": "npm run lint",
+      "pre-push": "npm test"
     }
   },
   "scripts": {
@@ -31,6 +32,7 @@
     "@modusbox/mcm-client": "^1.0.25",
     "@mojaloop/sdk-standard-components": "^11.4.0",
     "ajv": "^6.12.4",
+    "babel-eslint": "^10.1.0",
     "co-body": "^6.0.0",
     "dotenv": "^8.2.0",
     "env-var": "^6.3.0",
@@ -51,6 +53,7 @@
     "eslint": "^7.8.1",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
+    "husky": "^3.0.4",
     "jest": "^26.4.2",
     "jest-junit": "^11.1.0",
     "mockdate": "^3.0.2",

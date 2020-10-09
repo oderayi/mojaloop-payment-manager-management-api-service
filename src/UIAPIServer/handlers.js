@@ -204,6 +204,7 @@ const uploadClientCSR = async(ctx) => {
 };
 
 const createClientCSR = async(ctx) => {
+    
     const { dfspId, mcmServerEndpoint, privateKeyLength, privateKeyAlgorithm, 
         dfspCsrParameters, dfspCsrEncryptedKey } = ctx.state.conf;
 

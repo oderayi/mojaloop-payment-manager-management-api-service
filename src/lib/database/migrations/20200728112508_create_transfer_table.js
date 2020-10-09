@@ -26,6 +26,6 @@ exports.up = async (knex) => knex.schema.createTable(TABLE_NAME, (table) => {
     table.integer('completed_at');
 });
 
-exports.down = function (knex, Promise) {
+exports.down = function (knex) {
     return knex.schema.dropTableIfExists(TABLE_NAME);
 };
