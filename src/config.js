@@ -25,6 +25,7 @@ const env = from(process.env, {
     asFileContent: (path) => getFileContent(path),
     asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
     asYamlConfig: (path) => yaml.load(getFileContent(path)),
+    asJsonConfig: (path) => JSON.parse(getFileContent(path))
 });
 
 module.exports = {
@@ -63,4 +64,9 @@ module.exports = {
     tlsServerPrivateKey: env.get('TLS_SERVER_PRIVATE_KEY').required().asString(),
     dfspId: env.get('DFSP_ID').required().asString(),
     envId: env.get('ENV_ID').required().asString(),
+    privateKeyLength: env.get('PRIVATE_KEY_LENGTH').default(4096).asIntPositive(),
+    privateKeyAlgorithm: env.get('PRIVATE_KEY_ALGORITHM').default('rsa').asString(),
+    dfspCsrParameters: env.get('DFSP_CSR_PARAMETERS').asJsonConfig(),
+    dfspCaPath: env.get('DFSP_CA_PATH').required().asString(),
+    dfspCsrEncryptedKey: env.get('DFSP_CSR_KEY').required().asString()
 };

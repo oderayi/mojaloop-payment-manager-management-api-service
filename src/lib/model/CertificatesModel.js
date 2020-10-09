@@ -14,18 +14,30 @@ class CertificatesModel {
     constructor(opts) {
         this._logger = opts.logger;
         this._envId = opts.envId;
+        this._storage = opts.storage;
+
         this._mcmClientDFSPCertModel = new DFSPCertificateModel({
             dfspId: opts.dfspId,
             logger: opts.logger,
-            hubEndpoint: opts.mcmServerEndpoint,
+            hubEndpoint: opts.mcmServerEndpoint
         });
     }
 
     async uploadClientCSR(body) {
-        return this._mcmClientDFSPCertModel.createCSR({
+        return this._mcmClientDFSPCertModel.uploadCSR({
             envId : this._envId,
             csr: body,
         });
+    }
+
+    async createClientCSR(csrParameters, dfspCsrEncryptedKey) {
+        const createdCSR = await this._mcmClientDFSPCertModel.createCSR({
+            envId : this._envId,
+            csrParameters: csrParameters
+        });
+
+        await this._storage.setSecret(dfspCsrEncryptedKey, createdCSR.key);
+        return createdCSR.csr;
     }
 
     /**

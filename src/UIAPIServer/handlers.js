@@ -203,6 +203,28 @@ const uploadClientCSR = async(ctx) => {
     ctx.body = await certModel.uploadClientCSR(ctx.request.body.clientCSR);
 };
 
+const createClientCSR = async(ctx) => {
+    const { dfspId, mcmServerEndpoint, privateKeyLength, privateKeyAlgorithm, 
+        dfspCsrParameters, dfspCsrEncryptedKey } = ctx.state.conf;
+
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+        storage: ctx.state.storage
+    });
+
+    const csrParameters = {
+        privateKeyAlgorithm: privateKeyAlgorithm,
+        privateKeyLength: privateKeyLength,
+        parameters: dfspCsrParameters
+    };
+
+    const createdCSR = await certModel.createClientCSR(csrParameters, dfspCsrEncryptedKey);
+    ctx.body = await certModel.uploadClientCSR(createdCSR);
+};
+
 const getClientCertificates = async(ctx) => {
     const { dfspId, mcmServerEndpoint } = ctx.state.conf;
     const certModel = new CertificatesModel({
@@ -412,6 +434,9 @@ module.exports = {
     '/environments/{envId}/dfsp/clientcerts': {
         get: getClientCertificates,
         post: uploadClientCSR,
+    },
+    '/environments/{envId}/dfsp/clientcerts/csr': {
+        post: createClientCSR,
     },
     '/environments/{envId}/dfsp/ca': {
         get: getDFSPCA,

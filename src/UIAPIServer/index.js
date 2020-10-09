@@ -49,10 +49,13 @@ class UIAPIServer {
             logger: this._logger,
         });
 
+
+        this._storage = new Storage.File({ dirName: this._conf.mcmClientSecretsLocation });
         this._api.use(async (ctx, next) => {
             ctx.state = {
                 conf: this._conf,
                 db: this._db,
+                storage: this._storage
             };
             await next();
         });
@@ -65,7 +68,6 @@ class UIAPIServer {
         this._server = this._createServer();
 
         // Code to setup mcm client
-        this._storage = new Storage.File({ dirName: this._conf.mcmClientSecretsLocation });
         this._mcmState = new MCMStateModel({
             dfspId: this._conf.dfspId,
             envId: this._conf.envId,
@@ -73,8 +75,9 @@ class UIAPIServer {
             refreshIntervalSeconds: this._conf.mcmClientRefreshInternal,
             storage: this._storage,
             logger: this._logger,
-            pkSecretsLocation: this._conf.pkSecretsLocation,
-            authEnabled: this._conf.authEnabled,
+            tlsServerPrivateKey: this._conf.tlsServerPrivateKey,
+            dfspCaPath: this._conf.dfspCaPath,
+            authEnabled: this._conf.authEnabled
         });
 
         return this._server;
