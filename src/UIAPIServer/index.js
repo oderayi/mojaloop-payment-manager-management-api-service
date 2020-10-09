@@ -76,7 +76,8 @@ class UIAPIServer {
             storage: this._storage,
             logger: this._logger,
             tlsServerPrivateKey: this._conf.tlsServerPrivateKey,
-            dfspCaPath: this._conf.dfspCaPath
+            dfspCaPath: this._conf.dfspCaPath,
+            authEnabled: this._conf.authEnabled
         });
 
         return this._server;
