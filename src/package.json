@@ -1,6 +1,6 @@
 {
   "name": "mojaloop-payment-manager-management-api-service",
-  "version": "1.0.0",
+  "version": "1.7.2",
   "description": "Part of Payment Manager, supports data for UI screens",
   "main": "index.js",
   "author": "Murthy kakarlamudi, ModusBox Inc.",
