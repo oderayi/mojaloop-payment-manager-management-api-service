@@ -1,6 +1,6 @@
 .PHONY: build run
 
-NAME=mojaloop-payment-manager-management-api-service
+NAME=mojaloop-payment-manager-management-api
 
 default: build
 

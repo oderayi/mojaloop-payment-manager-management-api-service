@@ -46,6 +46,7 @@ class UIAPIServer {
 
         this._db = await database({
             ...this._conf,
+            syncInterval: this._conf.cacheSyncInterval,
             logger: this._logger,
         });
 

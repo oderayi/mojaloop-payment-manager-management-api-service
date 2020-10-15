@@ -33,6 +33,7 @@ module.exports = {
     runMigrations: env.get('RUN_DB_MIGRATIONS').default('true').asBool(),
     cacheHost: env.get('CACHE_HOST').asString(),
     cachePort: env.get('CACHE_PORT').default(6379).asPortNumber(),
+    cacheSyncInterval: env.get('CACHE_SYNC_INTERVAL_SECONDS').default(30).asIntPositive(),
     tls: {
         inbound: {
             mutualTLS: {
