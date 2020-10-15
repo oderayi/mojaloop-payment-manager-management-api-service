@@ -24,6 +24,7 @@ exports.up = async (knex) => knex.schema.createTable(TABLE_NAME, (table) => {
     table.string('dfsp');
     table.integer('created_at');
     table.integer('completed_at');
+    table.string('raw');
 });
 
 exports.down = function (knex, Promise) {

@@ -6,15 +6,20 @@
  *                                                                        *
  *  ORIGINAL AUTHOR:                                                      *
  *       Yevhen Kyriukha - yevhen.kyriukha@modusbox.com                   *
+ *                                                                        *
+ *  CONTRIBUTORS:                                                         *
+ *       James Bush - james.bush@modusbox.com                             *
  **************************************************************************/
 
+const util = require('util');
 const knex = require('knex');
 const Cache = require('./cache');
 
 const cachedFulfilledKeys = [];
 const cachedPendingKeys = [];
 
-async function syncDB({redisCache, db}) {
+async function syncDB({redisCache, db, logger}) {
+    logger.log('Syncing cache to in-memory DB');
     const getName = (userInfo) => userInfo.displayName || `${userInfo.firstName} ${userInfo.lastName}`;
     const getTransferStatus = (data) => {
         if (data.currentState === 'succeeded') {
@@ -33,6 +38,7 @@ async function syncDB({redisCache, db}) {
     };
 
     const cacheKey = async (key) => {
+        logger.log(`syncing key ${key}`);
         const data = await redisCache.get(key);
 
         // Workaround for *initiatedTimestamp* until SDK populates it in Redis
@@ -55,7 +61,10 @@ async function syncDB({redisCache, db}) {
             created_at: initiatedTimestamp,
             completed_at: completedTimestamp,
             success: getTransferStatus(data),
+            raw: JSON.stringify(data),
         };
+
+        logger.log(`syncing row: ${util.inspect(row)}`);
 
         const keyIndex = cachedPendingKeys.indexOf(key);
         if (keyIndex === -1) {
@@ -76,8 +85,10 @@ async function syncDB({redisCache, db}) {
     };
 
     const keys = await redisCache.keys('transferModel_*');
+    logger.log(`found the following transfer models in cache: ${util.inspect(keys)}`);
     const uncachedOrPendingKeys = keys.filter((x) => cachedFulfilledKeys.indexOf(x) === -1);
     await asyncForEach(uncachedOrPendingKeys, cacheKey);
+    logger.log('In-memory DB sync complete');
 }
 
 async function init(config) {
@@ -109,11 +120,12 @@ async function init(config) {
     const doSyncDB = () => syncDB({
         redisCache,
         db,
+        logger: config.logger,
     });
 
     if (!config.manualSync) {
         await doSyncDB();
-        const interval = setInterval(doSyncDB, config.syncInterval || 60 * 1e3);
+        const interval = setInterval(doSyncDB, (config.syncInterval || 60) * 1e3);
         db.stopSync = () => clearInterval(interval);
     } else {
         db.sync = doSyncDB;

@@ -70,7 +70,8 @@ const createRouter = (handlerMap) => {
                 try {
                     await Promise.resolve(handler(ctx, next));
                 } catch (e) {
-                    ctx.body = e.message;
+                    ctx.state.logger.log(`Error: ${e.stack || util.inspect(e)}`);
+                    ctx.body = { errorMessage: e.message };
                     ctx.status = 500;
                     // if (e instanceof HTTPResponseError) {
                     // ctx.body = e.toJSON();

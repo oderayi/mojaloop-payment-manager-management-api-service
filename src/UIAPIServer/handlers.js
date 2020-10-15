@@ -8,6 +8,8 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                         *
  **************************************************************************/
 
+const util = require('util');
+
 const {
     Transfer,
     Balances,
@@ -38,6 +40,29 @@ const getTransfer = async (ctx) => {
     });
     ctx.body = await transfer.findOne(ctx.params.transferId);
 };
+
+const getTransferErrors = async(ctx) => {
+    const transfer = new Transfer({
+        db: ctx.state.db,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await transfer.findErrors();
+}
+
+const getTransferDetail = async (ctx) => {
+    const transfer = new Transfer({
+        db: ctx.state.db,
+        logger: ctx.state.logger,
+    });
+
+    const res = await transfer.findOneDetail(ctx.params.transferId);
+    if(res) {
+      ctx.body = res;
+    }
+    else {
+      ctx.status = 404;
+    }
+}
 
 const getTransferStatusSummary = async (ctx) => {
     const { startTimestamp, endTimestamp } = ctx.query;
@@ -75,7 +100,7 @@ const getTransfersAvgResponseTime = async (ctx) => {
         logger: ctx.state.logger,
         conf: ctx.state.conf,
     });
-    ctx.body = transfer.avgResponseTime({ minutePrevious });
+    ctx.body = await transfer.avgResponseTime({ minutePrevious });
 };
 
 const getBalances = async(ctx) => {
@@ -386,8 +411,14 @@ module.exports = {
     '/transfers/{transferId}': {
         get: getTransfer,
     },
+    '/transfers/{transferId}/details': {
+        get: getTransferDetail,
+    },
     '/transferStatusSummary': {
         get: getTransferStatusSummary,
+    },
+    '/transferErrors': {
+        get: getTransferErrors,
     },
     '/hourlyFlow': {
         get: getHourlyFlow,
