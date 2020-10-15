@@ -30,14 +30,15 @@ class CertificatesModel {
         });
     }
 
-    async createClientCSR(csrParameters, dfspCsrEncryptedKey) {
+    async createClientCSR(csrParameters) {
         const createdCSR = await this._mcmClientDFSPCertModel.createCSR({
             envId : this._envId,
             csrParameters: csrParameters
         });
 
-        await this._storage.setSecret(dfspCsrEncryptedKey, createdCSR.key);
-        return createdCSR.csr;
+        //FIXME: createdCSR.key value should be saved in vault. Not being saved now in storage since secrets type in kubernetes are read-only
+
+        return createdCSR;
     }
 
     /**

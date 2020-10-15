@@ -67,6 +67,5 @@ module.exports = {
     privateKeyLength: env.get('PRIVATE_KEY_LENGTH').default(4096).asIntPositive(),
     privateKeyAlgorithm: env.get('PRIVATE_KEY_ALGORITHM').default('rsa').asString(),
     dfspCsrParameters: env.get('DFSP_CSR_PARAMETERS').asJsonConfig(),
-    dfspCaPath: env.get('DFSP_CA_PATH').required().asString(),
-    dfspCsrEncryptedKey: env.get('DFSP_CSR_KEY').required().asString()
+    dfspCaPath: env.get('DFSP_CA_PATH').required().asString()
 };

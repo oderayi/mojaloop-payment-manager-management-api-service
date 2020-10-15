@@ -12,9 +12,7 @@ describe('create dfsp csr and upload to mcm', () => {
             parameters: 'mocked'
         };
 
-        const encryptedKey = 'encryptedKey';
-
-        const createdCsrMock = { mocked: true};
+        const createdCsrMock = { key: 'mocked', csr: 'mocked'};
         
         const context =  {
             'state': {
@@ -23,8 +21,7 @@ describe('create dfsp csr and upload to mcm', () => {
                     dfspId: 'pm4mltest',
                     privateKeyAlgorithm: csrParameters.privateKeyAlgorithm,
                     privateKeyLength : csrParameters.privateKeyLength,
-                    dfspCsrParameters: csrParameters.parameters,
-                    dfspCsrEncryptedKey: encryptedKey
+                    dfspCsrParameters: csrParameters.parameters
                 },
             },
             params: { 'envId': '1' }
@@ -43,8 +40,7 @@ describe('create dfsp csr and upload to mcm', () => {
         expect(uploadClientCSRSpy).toHaveBeenCalledTimes(1);
 
         expect(createClientCSRSpy.mock.calls[0][0]).toStrictEqual(csrParameters);
-        expect(createClientCSRSpy.mock.calls[0][1]).toStrictEqual(encryptedKey);
 
-        expect(uploadClientCSRSpy.mock.calls[0][0]).toStrictEqual(createdCsrMock);
+        expect(uploadClientCSRSpy.mock.calls[0][0]).toStrictEqual(createdCsrMock.csr);
     });
 });
