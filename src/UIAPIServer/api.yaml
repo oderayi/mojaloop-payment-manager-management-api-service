@@ -288,6 +288,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/EndPointAny'
       x-swagger-router-controller: "DfspNetworkConfig"
+  /environments/{envId}/dfsps:
+    get:
+      tags:
+        - "DFSP"
+      summary: "Get all the participants"
+      description: "Get all the participants"
+      parameters:
+        - name: envId
+          in: path
+          description: ID of environment
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DFSPDetails'
   /environments/{envId}/dfsp/endpoints/{epId}:
     parameters:
       - name: envId
@@ -711,6 +733,27 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ServerCert"
+      x-swagger-router-controller: DfspServerCerts
+  /environments/{envId}/dfsp/clientcerts/csr:
+    parameters:
+      - name: envId
+        in: path
+        description: ID of environment
+        required: true
+        schema:
+          type: string
+    post:
+      tags:
+        - DFSP-client-certificates-configuration
+      summary: post client certificates
+      description: Creates inbound CSR and uploads it to MCM
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessfulEnrollment"
       x-swagger-router-controller: DfspServerCerts
   /monetaryzones:
     get:
@@ -1806,7 +1849,12 @@ components:
         - "NEW"
         - "CONFIRMED"
         - "INVALID"
-
+    SuccessfulEnrollment:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
     BaseJWSCert:
       type: "object"
       description: "JWS Certificate."

@@ -21,6 +21,9 @@ COPY ./src/lib/randomphrase/package.json ./lib/randomphrase/package.json
 COPY ./src/lib/requests/package.json ./lib/requests/package.json
 # for local testing
 # COPY ./src/lib/mcmclient/package.json ./lib/mcmclient/package.json
+# COPY ./src/lib/mcmclient/lib/pkiengine/package.json ./lib/mcmclient/lib/pkiengine/package.json
+
+
 RUN npm install --only=production
 RUN rm -f ./.npmrc
 
@@ -28,7 +31,7 @@ FROM node:lts-alpine
 
 
 # Install cfssl git make
-RUN apk add --no-cache git make musl-dev go
+RUN apk add --no-cache git make musl-dev go openssl
 
 # golang env
 ENV GOPATH /go

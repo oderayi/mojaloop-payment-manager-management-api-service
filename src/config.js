@@ -25,6 +25,7 @@ const env = from(process.env, {
     asFileContent: (path) => getFileContent(path),
     asFileListContent: (pathList) => pathList.split(',').map((path) => getFileContent(path)),
     asYamlConfig: (path) => yaml.load(getFileContent(path)),
+    asJsonConfig: (path) => JSON.parse(getFileContent(path))
 });
 
 module.exports = {
@@ -59,8 +60,13 @@ module.exports = {
     mcmServerEndpoint: env.get('MCM_SERVER_ENDPOINT').required().asString(),
     mcmClientRefreshInternal: env.get('MCM_CLIENT_REFRESH_INTERVAL').default(300).asString(),
     mcmClientSecretsLocation: env.get('MCM_CLIENT_SECRETS_LOCATION').required().asString(),
-    pkSecretsLocation: env.get('PK_SECRETS_LOCATION').required().asString(),
-    mcmAPIToken: env.get('MCM_API_TOKEN').required().asString(),
+    authEnabled: env.get('AUTH_ENABLED').asBoolStrict(),
+    tlsServerPrivateKey: env.get('TLS_SERVER_PRIVATE_KEY').required().asString(),
     dfspId: env.get('DFSP_ID').required().asString(),
     envId: env.get('ENV_ID').required().asString(),
+    privateKeyLength: env.get('PRIVATE_KEY_LENGTH').default(4096).asIntPositive(),
+    privateKeyAlgorithm: env.get('PRIVATE_KEY_ALGORITHM').default('rsa').asString(),
+    dfspCsrParameters: env.get('DFSP_CSR_PARAMETERS').asJsonConfig(),
+    dfspCaPath: env.get('DFSP_CA_PATH').required().asString(),
+    dfspCsrEncryptedKey: env.get('DFSP_CSR_KEY').required().asString()
 };

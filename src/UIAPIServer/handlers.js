@@ -124,6 +124,19 @@ const getDFSPDetails = async(ctx) => {
     ctx.body = await dfsp.getDfspDetails();
 };
 
+const getAllDfsps = async(ctx) => {
+    const { envId, dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const dfsp = new DFSP({
+        envId,
+        dfspId,
+        mcmServerEndpoint,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await dfsp.getAllDfsps();
+};
+
+
+
 const getDFSPSByMonetaryZone = async(ctx) => {
     const { envId, dfspId, mcmServerEndpoint } = ctx.state.conf;
     const dfsp = new DFSP({
@@ -213,6 +226,28 @@ const uploadClientCSR = async(ctx) => {
         logger: ctx.state.logger,
     });
     ctx.body = await certModel.uploadClientCSR(ctx.request.body.clientCSR);
+};
+
+const createClientCSR = async(ctx) => {
+    const { dfspId, mcmServerEndpoint, privateKeyLength, privateKeyAlgorithm, 
+        dfspCsrParameters, dfspCsrEncryptedKey } = ctx.state.conf;
+
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+        storage: ctx.state.storage
+    });
+
+    const csrParameters = {
+        privateKeyAlgorithm: privateKeyAlgorithm,
+        privateKeyLength: privateKeyLength,
+        parameters: dfspCsrParameters
+    };
+
+    const createdCSR = await certModel.createClientCSR(csrParameters, dfspCsrEncryptedKey);
+    ctx.body = await certModel.uploadClientCSR(createdCSR);
 };
 
 const getClientCertificates = async(ctx) => {
@@ -404,6 +439,9 @@ module.exports = {
         get: getDFSPEndpoints,
         post: createDFSPEndpoints,
     },
+    '/environments/{envId}/dfsps': {
+        get: getAllDfsps,
+    },    
     '/environments/{envId}/dfsp/endpoints/{epId}': {
         put: updateDFSPEndpoint,
         delete: deleteDFSPEndpoint,
@@ -427,6 +465,9 @@ module.exports = {
     '/environments/{envId}/dfsp/clientcerts': {
         get: getClientCertificates,
         post: uploadClientCSR,
+    },
+    '/environments/{envId}/dfsp/clientcerts/csr': {
+        post: createClientCSR,
     },
     '/environments/{envId}/dfsp/ca': {
         get: getDFSPCA,
