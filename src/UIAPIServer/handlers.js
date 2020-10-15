@@ -8,8 +8,6 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                         *
  **************************************************************************/
 
-const util = require('util');
-
 const {
     Transfer,
     Balances,

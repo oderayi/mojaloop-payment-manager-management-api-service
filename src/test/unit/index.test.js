@@ -17,13 +17,13 @@ jest.mock('dotenv', () => ({
 //const index = require('../../index.js');
 
 
-describe('index.js', () => {
-    test.skip('Exports expected modules', () => {
-        expect(typeof(index.Server)).toBe('function');
-        expect(typeof(index.UIAPIServerMiddleware)).toBe('object');
-        expect(typeof(index.Router)).toBe('function');
-        expect(typeof(index.Validate)).toBe('function');
-        expect(typeof(index.RandomPhrase)).toBe('function');
-        expect(typeof(index.Log)).toBe('object');
-    });
-});
+// describe('index.js', () => {
+//     test.skip('Exports expected modules', () => {
+//         expect(typeof(index.Server)).toBe('function');
+//         expect(typeof(index.UIAPIServerMiddleware)).toBe('object');
+//         expect(typeof(index.Router)).toBe('function');
+//         expect(typeof(index.Validate)).toBe('function');
+//         expect(typeof(index.RandomPhrase)).toBe('function');
+//         expect(typeof(index.Log)).toBe('object');
+//     });
+// });
