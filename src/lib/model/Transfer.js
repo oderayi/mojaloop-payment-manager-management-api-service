@@ -8,9 +8,14 @@
  *       Yevhen Kyriukha - yevhen.kyriukha@modusbox.com                   *
  **************************************************************************/
 
+const util = require('util');
+//const { Errors } = require('@mojaloop/sdk-standard-components');
+
+
 class Transfer {
     constructor(opts) {
         this._db = opts.db;
+        this._logger = opts.logger;
     }
 
     static STATUSES = {
@@ -19,7 +24,9 @@ class Transfer {
         0: 'ERROR',
     };
 
-    static _convertToApiFormat(transfer) {
+    _convertToApiFormat(transfer) {
+        const raw = JSON.parse(transfer.raw);
+        this._logger.log(`raw transfer: ${util.inspect(raw, { depth: Infinity })}`);
         return {
             id: transfer.id,
             batchId: transfer.batch_id,
@@ -34,6 +41,66 @@ class Transfer {
             sender: transfer.sender,
             recipient: transfer.recipient,
             details: transfer.details,
+            errorType: transfer.success == 0 ? Transfer._transferLastErrorToErrorType(raw.lastError) : null,
+        };
+    }
+
+    static _transferLastErrorToErrorType(err) {
+        if (err.mojaloopError) {
+            return err.mojaloopError.errorInformation.errorDescription;
+        }
+        return `${err.httpStatusCode}`;
+    }
+
+    _convertToApiDetailFormat(transfer) {
+        const raw = JSON.parse(transfer.raw);
+        this._logger.log(`raw transfer: ${util.inspect(raw, { depth: Infinity })}`);
+        return {
+            id: transfer.id,
+            amount: raw.amount,
+            currency: raw.currency,
+            type: raw.transactionType,
+            institution: transfer.dfsp,
+            direction: transfer.direction > 0 ? 'OUTBOUND' : 'INBOUND',
+            status: Transfer.STATUSES[transfer.success],
+            confirmationNumber: 0, // TODO: Implement
+            sender: transfer.sender,
+            recipient: transfer.recipient,
+            details: transfer.details,
+            initiatedTimestamp: raw.initiatedTimestamp,
+            technicalDetails: {
+                schemeTransferId: raw.transferId,
+                homeTransferId: raw.homeTransactionId,
+                transactionId: raw.quoteRequest ? raw.quoteRequest.transactionId : '',
+                transferState: raw.currentState,
+                payerParty: this._convertToTransferParty(raw.from),
+                payeeParty: this._convertToTransferParty(raw.to),
+                getPartiesRequest: { headers: {}, body: {} },
+                getPartiesResponse: { headers: {}, body: {} },
+                quoteRequest: { headers: {}, body: {} },
+                quoteResponse: { headers: {}, body: raw.quoteResponse },
+                transferPrepare: { headers: {}, body: {} },
+                transferFulfilment: { headers: {}, body: raw.fulfil},
+                lastError: raw.lastError,
+            }
+        };
+    }
+
+
+    _convertToTransferParty(party) {
+        return {
+          type: '',
+          idType: party.idType,
+          idValue: party.idValue,
+          idSubType: party.idSubType,
+          displayName: party.displayName || `${party.firstName}${party.middleName ? ' ' + party.middleName : ''} ${party.lastName}`,
+          firstName: party.firstName,
+          middleName: party.middleName,
+          lastName: party.lastName,
+          dateOfBirth: party.dateOfBirth,
+          merchantClassificationCode: party.merchantClassificationCode,
+          fspId: party.fspId,
+          extensionList: party.extensionList,
         };
     }
 
@@ -78,7 +145,7 @@ class Transfer {
         query.orderBy('created_at');
 
         const rows = await query;
-        return rows.map(Transfer._convertToApiFormat);
+        return rows.map(this._convertToApiFormat.bind(this));
     }
 
     /**
@@ -87,8 +154,27 @@ class Transfer {
      */
     async findOne(id) {
         const row = await this._db('transfer').where('id', id);
-        return Transfer._convertToApiFormat(row);
+        return this._convertToApiFormat(row);
     }
+
+    /**
+     *
+     * @param id {string}
+     */
+    async findOneDetail(id) {
+        const rows = await this._db('transfer').where('id', id);
+        if(rows.length > 0) {
+          return this._convertToApiDetailFormat(rows[0]);
+        }
+        return null;
+    }
+
+
+    async findErrors() {
+        const rows = await this._db('transfer').where('success', false);
+        return rows.map(this._convertToApiFormat.bind(this));
+    }
+
 
     /**
      *
@@ -134,10 +220,13 @@ class Transfer {
                 .select(this._db.raw('MIN(((created_at) / (60 * 1000)) * 60 * 1000) as timestamp'))  // trunc (milli)seconds
                 .whereRaw(`(${now} - created_at) < ${(opts.minutePrevious || 10) * 60 * 1000}`)
                 .andWhereRaw('success IS NOT NULL')
+                .andWhereRaw('completed_at IS NOT NULL')
+                .andWhereRaw('created_at IS NOT NULL')
                 .groupByRaw('created_at / (60 * 1000)');
         };
 
-        return avgRespTimeQuery();
+        const rows = await avgRespTimeQuery();
+        return rows;
     }
 
     /**
@@ -199,12 +288,24 @@ class Transfer {
             return query;
         };
         const rows = await statusQuery();
-        return rows
-            .map((row) => ({
-                status: Transfer.STATUSES[row.success],
-                count: row.count,
-            }))
-            .sort((a, b) => a.status.localeCompare(b.status));
+
+        let ret = {};
+
+        Object.keys(Transfer.STATUSES).map(k => {
+            ret[Transfer.STATUSES[k]] = {
+                status: Transfer.STATUSES[k],
+                count: 0,
+            };
+        })
+
+        rows.forEach(r => {
+            ret[Transfer.STATUSES[r.success]] = {
+                status: Transfer.STATUSES[r.success],
+                count: r.count
+            };
+        });
+
+        return Object.keys(ret).map(r => ret[r]);
     }
 }
 
