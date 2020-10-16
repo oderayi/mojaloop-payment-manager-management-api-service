@@ -14,14 +14,14 @@ orbs:
 # defaults
 #
 # YAML defaults templates, in alphabetical order
-##  
+##
 defaults_Dependencies: &defaults_Dependencies |
-  apk --no-cache add git
-  apk --no-cache add ca-certificates
-  apk --no-cache add curl
-  apk --no-cache add openssh-client
-  apk --no-cache add bash
-  apk add --no-cache -t build-dependencies make gcc g++ python libtool autoconf automake
+  apk --update --no-cache add \
+    git \
+    ca-certificates \
+    curl \
+    openssh-client \
+    -t build-dependencies make gcc g++ python3 libtool autoconf automake
   npm config set unsafe-perm true
   npm install -g node-gyp
 
@@ -48,11 +48,12 @@ defaults_license_scanner: &defaults_license_scanner
 ##
 executors:
   default-docker:
-    working_directory: /home/circleci/project
-    docker: 
-      - image: node:12.16.1-alpine
+    working_directory: /home/circleci/project/git
+    docker:
+      - image: node:12.19.0-alpine
 
   default-machine:
+    working_directory: /home/circleci/project/git
     machine:
       image: ubuntu-1604:201903-01
 
@@ -70,16 +71,13 @@ jobs:
           name: Install general dependencies
           command: *defaults_Dependencies
       - run:
-          name: Access npm folder as root
-          command: cd $(npm root -g)/npm
-      - run:
-          name: Update NPM install
-          command: cd src && npm install
+          name: Update NPM install (using `npm ci`)
+          command: cd src && npm ci
       - run:
           name: Delete build dependencies
           command: apk del build-dependencies
       - save_cache:
-          key: dependency-cache-5-{{ checksum "src/package.json" }}
+          key: dependency-cache-v1-{{ checksum "src/package-lock.json" }}
           paths:
             - src/node_modules
 
@@ -92,14 +90,16 @@ jobs:
           command: *defaults_Dependencies
       - restore_cache:
           keys:
-          - dependency-cache-5-{{ checksum "src/package.json" }}
+          - dependency-cache-v1-{{ checksum "src/package-lock.json" }}
+          paths:
+            - src/node_modules
       - run:
           name: Execute unit tests
-          command: cd src && npm run test
+          command: cd src && npm test
       - store_test_results:
-          path: /home/circleci/project/src/
+          path: /home/circleci/project/git/src/
       - store_artifacts:
-          path: /home/circleci/project/src/junit.xml
+          path: /home/circleci/project/git/src/junit.xml
 
   test-integration:
     executor: default-machine
@@ -121,31 +121,23 @@ jobs:
           name: Copy results from docker
           command: docker cp scheme-adapter-int:/src/junit.xml .
       - store_test_results:
-          path: /home/circleci/project/
+          path: /home/circleci/project/git
       - store_artifacts:
-          path: /home/circleci/project/junit.xml
+          path: /home/circleci/project/git/junit.xml
 
   lint:
     executor: default-docker
     steps:
       - checkout
-      - run:
-          name: Install general dependencies
-          command: *defaults_Dependencies
       - restore_cache:
           keys:
-          - dependency-cache-5-{{ checksum "src/package.json" }}
-      - run:
-          name: Create dir for lint results
-          command: cd src && mkdir -p /lintresults
+          - dependency-cache-v1-{{ checksum "src/package-lock.json" }}
       - run:
           name: Execute linting
-          command: cd src && (npm run lint > /lintresults/results.txt)
-      - store_artifacts:
-          path: /lintresults
-      - slack/status:
-          fail_only: true
-          message: '*"${CIRCLE_PROJECT_REPONAME}"* - Release \`"${CIRCLE_TAG}"\` \nhttps://github.com/modusintegration/"${CIRCLE_PROJECT_REPONAME}"/releases/tag/"${CIRCLE_TAG}"'
+          command: cd src && npm run lint
+#      - slack/status:
+#          fail_only: true
+#          message: '*"${CIRCLE_PROJECT_REPONAME}"* - Release \`"${CIRCLE_TAG}"\` \nhttps://github.com/modusintegration/"${CIRCLE_PROJECT_REPONAME}"/releases/tag/"${CIRCLE_TAG}"'
 
   audit-licenses:
     executor: default-docker
@@ -157,7 +149,7 @@ jobs:
           <<: *defaults_license_scanner
       - checkout
       - restore_cache:
-          key: dependency-cache-5-{{ checksum "src/package.json" }}
+          key: dependency-cache-v1-{{ checksum "src/package-lock.json" }}
       - run:
           name: Run the license-scanner
           command: cd /tmp/license-scanner && pathToRepo=$CIRCLE_WORKING_DIRECTORY make run
@@ -181,7 +173,7 @@ jobs:
           root: /tmp
           paths:
             - ./docker-image.tar
-      
+
   license-scan:
     executor: default-machine
     steps:
@@ -198,60 +190,7 @@ jobs:
       - store_artifacts:
           path: /tmp/license-scanner/results
           prefix: licenses
-  # Note: Disabled for now to investigate vulnerabilities without interfering with releases
-  # image-scan:
-  #   executor: anchore/anchore_engine
-  #   steps:
-  #     - setup_remote_docker
-  #     - checkout
-  #     - run:
-  #         name: Install docker dependencies for anchore
-  #         command: |
-  #           apk add --update python3 py3-pip docker python3-dev libffi-dev openssl-dev gcc libc-dev make jq npm
-  #     - run:
-  #         name: Install AWS CLI dependencies
-  #         command: *defaults_awsCliDependencies
-  #     - attach_workspace:
-  #         at: /tmp
-  #     - run:
-  #         name: Load the pre-built docker image from workspace
-  #         command: docker load -i /tmp/docker-image.tar
-  #     - run:
-  #         name: Download the mojaloop/ci-config repo
-  #         command: |
-  #           git clone https://github.com/mojaloop/ci-config /tmp/ci-config
-  #           # Generate the mojaloop anchore-policy
-  #           cd /tmp/ci-config/container-scanning && ./mojaloop-policy-generator.js /tmp/mojaloop-policy.json
-  #     - run:
-  #         name: Pull base image locally
-  #         command: |
-  #           docker pull node:12.16.1-alpine
-  #     # Analyze the base and derived image
-  #     # Note: It seems images are scanned in parallel, so preloading the base image result doesn't give us any real performance gain
-  #     - anchore/analyze_local_image:
-  #         # Force the older version, version 0.7.0 was just published, and is broken
-  #         anchore_version: v0.6.1
-  #         image_name: "docker.io/node:12.16.1-alpine $DOCKER_ORG/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG"
-  #         policy_failure: false
-  #         timeout: '500'
-  #         # Note: if the generated policy is invalid, this will fallback to the default policy, which we don't want!
-  #         policy_bundle_file_path: /tmp/mojaloop-policy.json
-  #     - run:
-  #         name: Upload Anchore reports to s3
-  #         command: |
-  #           aws s3 cp anchore-reports ${AWS_S3_DIR_ANCHORE_REPORTS}/${CIRCLE_PROJECT_REPONAME}/ --recursive
-  #           aws s3 rm ${AWS_S3_DIR_ANCHORE_REPORTS}/latest/ --recursive --exclude "*" --include "${CIRCLE_PROJECT_REPONAME}*"
-  #           aws s3 cp anchore-reports ${AWS_S3_DIR_ANCHORE_REPORTS}/latest/ --recursive
-  #     - run:
-  #         name: Evaluate failures
-  #         command: /tmp/ci-config/container-scanning/anchore-result-diff.js anchore-reports/node_12.16.1-alpine-policy.json anchore-reports/${CIRCLE_PROJECT_REPONAME}*-policy.json
-  #     - slack/status:
-  #         fail_only: true
-  #         webhook: "$SLACK_WEBHOOK_ANNOUNCMENT_CI_CD"
-  #         failure_message: 'Anchore Image Scan failed for: \`"${DOCKER_ORG}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}"\`'
-  #     - store_artifacts:
-  #         path: anchore-reports
-  
+
   publish:
     executor: default-machine
     steps:
@@ -276,10 +215,15 @@ jobs:
             docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
             # echo "Publishing $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG"
             # docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$RELEASE_TAG
-      - slack/status:
-          # webhook: "$SLACK_WEBHOOK_ANNOUNCEMENT"
-          success_message: '*"${CIRCLE_PROJECT_REPONAME}"* - Release \`"${CIRCLE_TAG}"\` \nhttps://github.com/modusintegration/"${CIRCLE_PROJECT_REPONAME}"/releases/tag/"${CIRCLE_TAG}"'
+#      - slack/status:
+#          # webhook: "$SLACK_WEBHOOK_ANNOUNCEMENT"
+#          success_message: '*"${CIRCLE_PROJECT_REPONAME}"* - Release \`"${CIRCLE_TAG}"\` \nhttps://github.com/modusintegration/"${CIRCLE_PROJECT_REPONAME}"/releases/tag/"${CIRCLE_TAG}"'
 
+##
+# Workflows
+#
+# CircleCI Workflow config
+##
 workflows:
   version: 2
   build_and_test:
@@ -315,96 +259,27 @@ workflows:
               ignore:
                 - /feature*/
                 - /bugfix*/
-      # - test-integration:
-      #     context: wmt
-      #     requires:
-      #       - setup
-      #     filters:
-      #       tags:
-      #         only: /.*/
-      #       branches:
-      #         ignore:
-      #           - /feature*/
-      #           - /bugfix*/
-      # - audit-licenses:
-      #     context: wmt
-      #     requires:
-      #       - setup
-      #     filters:
-      #       tags:
-      #         only: /.*/
-      #       branches:
-      #         ignore:
-      #           - /feature*/
-      #           - /bugfix*/
-      # - build:
-      #     context: wmt
-      #     requires:
-      #       - setup
-      #       - test-unit
-      #       # - test-integration
-      #       - lint
-      #       # - audit-licenses
-      #     filters:
-      #       tags:
-      #         only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
-      #       branches:
-      #         ignore:
-      #           - /.*/
-      # - license-scan:
-      #     context: wmt
-      #     requires:
-      #       - build
-      #     filters:
-      #       tags:
-      #         only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
-      #       branches:
-      #         ignore:
-      #           - /.*/
-      # Note: Disabled for now to investigate vulnerabilities without interfering with releases
-      # - image-scan:
-      #     context: wmt
-      #     requires:
-      #       - build
-      #     filters:
-      #       tags:
-      #         only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
-      #       branches:
-      #         ignore:
-      #           - /.*/
-      # - publish:
-      #     context: wmt
-      #     requires:
-      #       # - license-scan
-      #       - build
-      #     filters:
-      #       tags:
-      #         only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
-      #       branches:
-      #         ignore:
-      #           - /.*/
-      - docker/publish:
-          requires:
-            - test-unit
-          before_build:
-            - run:
-                name: set image tag
-                command: |
-                  if [[ -v CIRCLE_TAG ]]; then
-                    echo 'export IMAGE_TAG=$(echo $CIRCLE_TAG | tr -d v)' >> $BASH_ENV
-                  else
-                    echo 'export IMAGE_TAG=$CIRCLE_BRANCH' >> $BASH_ENV
-                  fi
-          # lint-dockerfile: true
-          # path: server
-          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
-          tag: $IMAGE_TAG
-          registry: $DOCKER_REGISTRY
-          docker-username: DOCKER_USER
-          docker-password: DOCKER_PASSWORD
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
-            branches:
-              ignore:
-                - master
+#      - publish:
+#          requires:
+#            - test-unit
+#            - lint
+#          before_build:
+#            - run:
+#                name: set image tag
+#                command: |
+#                  if [[ -v CIRCLE_TAG ]]; then
+#                    echo 'export IMAGE_TAG=$(echo $CIRCLE_TAG | tr -d v)' >> $BASH_ENV
+#                  else
+#                    echo 'export IMAGE_TAG=$CIRCLE_BRANCH' >> $BASH_ENV
+#                  fi
+#          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+#          tag: $IMAGE_TAG
+#          registry: $DOCKER_REGISTRY
+#          docker-username: DOCKER_USER
+#          docker-password: DOCKER_PASSWORD
+#          filters:
+#            tags:
+#              only: /v[0-9]+(\.[0-9]+)*(\-snapshot)?(\-hotfix(\.[0-9]+))?/
+#            branches:
+#              ignore:
+#                - master
