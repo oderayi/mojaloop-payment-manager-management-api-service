@@ -251,7 +251,7 @@ workflows:
                   else
                     echo 'export IMAGE_TAG=$CIRCLE_BRANCH' >> $BASH_ENV
                   fi
-          lint-dockerfile: true
+          lint-dockerfile: false
           image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
           tag: $IMAGE_TAG
           registry: $DOCKER_REGISTRY
