@@ -249,7 +249,7 @@ const createClientCSR = async(ctx) => {
     ctx.body = await certModel.uploadClientCSR(createdCSR.csr);
     
     const inboundEnrollmentId = ctx.body.id;
-        // call the hub to generate the certificate (sign the CSR)
+    // call the hub to generate the certificate (sign the CSR)
     const inboundEnrollmentSigned = await certModel.signInboundEnrollment(inboundEnrollmentId);
 
     // FIXME: Check inboundEnrollmentSigned.state === CERT_SIGNED
