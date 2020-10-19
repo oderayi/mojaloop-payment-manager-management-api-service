@@ -1,6 +1,8 @@
+/* eslint-disable no-unused-vars */
 'use strict';
 const handlers = require('../../../UIAPIServer/handlers');
-const { CertificatesModel } = require('@internal/model');
+const { CertificatesModel, Hub } = require('@internal/model');
+const cas = require('../../resources/cas.json');
 
 
 describe('create dfsp csr and upload to mcm', () => {
@@ -23,6 +25,14 @@ describe('create dfsp csr and upload to mcm', () => {
                     privateKeyLength : csrParameters.privateKeyLength,
                     dfspCsrParameters: csrParameters.parameters
                 },
+                logger: {
+                    push: (obj) => {
+                        return { log : (msg) => {
+                            // this is too verbose
+                            // console.log(obj, msg);
+                        }};
+                    }
+                }
             },
             params: { 'envId': '1' }
         };
@@ -31,13 +41,21 @@ describe('create dfsp csr and upload to mcm', () => {
             .mockImplementation(() => { return createdCsrMock; });
 
         const uploadClientCSRSpy = jest.spyOn(CertificatesModel.prototype, 'uploadClientCSR')
-            .mockImplementation(() => {});
+            .mockImplementation(() => { return {ctx: {body: 1}};});
 
+        const signInboundEnrollmentSpy = jest.spyOn(CertificatesModel.prototype, 'signInboundEnrollment')
+            .mockImplementation(() => { return {ctx: {body: 1}};});
+
+        const getHubCASSpy = jest.spyOn(Hub.prototype, 'getHubCAS')
+            .mockImplementation(() => { return cas; } );
+            
 
         await handlers['/environments/{envId}/dfsp/clientcerts/csr'].post(context);
 
         expect(createClientCSRSpy).toHaveBeenCalledTimes(1);
         expect(uploadClientCSRSpy).toHaveBeenCalledTimes(1);
+        expect(signInboundEnrollmentSpy).toHaveBeenCalledTimes(1);
+        expect(getHubCASSpy).toHaveBeenCalledTimes(1);
 
         expect(createClientCSRSpy.mock.calls[0][0]).toStrictEqual(csrParameters);
 
