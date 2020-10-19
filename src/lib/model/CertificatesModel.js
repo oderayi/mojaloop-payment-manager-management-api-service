@@ -95,6 +95,13 @@ class CertificatesModel {
         });
     }
 
+    async signInboundEnrollment(inboundEnrollmentId) {
+        return this._mcmClientDFSPCertModel.signInboundEnrollment({
+            envId : this._envId,
+            inboundEnrollmentId
+        });
+    }
+
     /**
      * Gets uploaded JWS certificate
      */

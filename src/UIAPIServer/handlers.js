@@ -247,6 +247,21 @@ const createClientCSR = async(ctx) => {
 
     const createdCSR = await certModel.createClientCSR(csrParameters);
     ctx.body = await certModel.uploadClientCSR(createdCSR.csr);
+    
+    const inboundEnrollmentId = ctx.body.id;
+        // call the hub to generate the certificate (sign the CSR)
+    const inboundEnrollmentSigned = await certModel.signInboundEnrollment(inboundEnrollmentId);
+
+    // FIXME: Check inboundEnrollmentSigned.state === CERT_SIGNED
+    ctx.state.logger.push({inboundEnrollmentSigned}).log('inboundEnrollmentSigned');
+
+    //retrieve hub CA 
+    await getHubCAS(ctx);
+    const hubCAs = ctx.body;
+    ctx.state.logger.push({hubCAs}).log('hubCAs');
+
+    const hubCA = hubCAs.find(hubCa => hubCa.id === inboundEnrollmentSigned.hubCAId);
+    ctx.state.logger.push({hubCA}).log('hubCA');
 };
 
 const getClientCertificates = async(ctx) => {
