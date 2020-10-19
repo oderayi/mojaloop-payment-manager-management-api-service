@@ -20,6 +20,11 @@
     "test": "jest --ci --reporters=default --reporters=jest-junit --env=node test/unit",
     "test:int": "jest --ci --reporters=default --reporters=jest-junit --env=node test/integration --forceExit"
   },
+  "jest": {
+    "setupFiles": [
+      "<rootDir>/test/jest/setEnvVars.js"
+    ]
+  },  
   "dependencies": {
     "@internal/database": "file:lib/database",
     "@internal/log": "file:lib/log",
