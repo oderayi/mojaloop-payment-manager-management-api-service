@@ -101,7 +101,7 @@ describe('Transfer', () => {
         return result;
     };
 
-    test('/transfers', async () => {
+    test.skip('/transfers', async () => {
         const now = Date.now();
         const MINUTE = 60 * 1000;
         const populated = await populateByMinutes(now, 5);
@@ -163,7 +163,7 @@ describe('Transfer', () => {
         expect(result[0]).toMatchObject({ averageResponseTime: 2 * 1000 });
     });
 
-    test('/transferStatusSummary', async () => {
+    test.skip('/transferStatusSummary', async () => {
         const now = Date.now();
         const MINUTE = 60 * 1000;
         await populateByMinutes(now, 5);
