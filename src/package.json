@@ -24,13 +24,13 @@
     "setupFiles": [
       "<rootDir>/test/jest/setEnvVars.js"
     ]
-  },  
+  },
   "dependencies": {
     "@internal/database": "file:lib/database",
     "@internal/log": "file:lib/log",
     "@internal/model": "file:lib/model",
     "@internal/randomphrase": "file:lib/randomphrase",
-    "@modusbox/mcm-client": "^1.0.27",
+    "@modusbox/mcm-client": "^1.0.28",
     "@mojaloop/sdk-standard-components": "^11.4.0",
     "ajv": "^6.12.4",
     "babel-eslint": "^10.1.0",
