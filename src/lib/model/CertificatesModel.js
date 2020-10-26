@@ -8,19 +8,23 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                   *
  **************************************************************************/
 
-const { DFSPCertificateModel } = require('@modusbox/mcm-client');
+const { DFSPCertificateModel, ConnectorModel } = require('@modusbox/mcm-client');
+const { EmbeddedPKIEngine } = require('mojaloop-connection-manager-pki-engine');
 
 class CertificatesModel {
     constructor(opts) {
         this._logger = opts.logger;
         this._envId = opts.envId;
         this._storage = opts.storage;
+        this._wsUrl = opts.wsUrl;
 
         this._mcmClientDFSPCertModel = new DFSPCertificateModel({
             dfspId: opts.dfspId,
             logger: opts.logger,
             hubEndpoint: opts.mcmServerEndpoint
         });
+
+        this._connectorModel = new ConnectorModel(opts);
     }
 
     async uploadClientCSR(body) {
@@ -100,6 +104,28 @@ class CertificatesModel {
             envId : this._envId,
             inboundEnrollmentId
         });
+    }
+
+    async exchangeInboundSdkConfiguration(csr, dfspCaPath) {
+        console.log('about to sign csr and exchange with sdk :: ');
+        const dfspCA = await this._storage.getSecret(dfspCaPath);
+
+        if (dfspCA) {
+            const embeddedPKIEngine = new EmbeddedPKIEngine(dfspCA, csr.key);
+            const cert = await embeddedPKIEngine.sign(csr.csr);
+            this._logger.log('Certificate created and signed :: ', cert);
+
+            //key generated with csr is encrypted
+            const decryptedCsrPrivateKey = await embeddedPKIEngine.decryptKey(csr.key);
+
+            console.log('exchangeInboundSdkConfiguration :: ');
+            await this._connectorModel.reconfigureInboundSdk(decryptedCsrPrivateKey, cert, dfspCA);
+
+            return cert;
+
+        } else {
+            throw new Error('Not signing dfsp own csr since dfsp CA  certificate is null or empty');
+        }
     }
 
     /**

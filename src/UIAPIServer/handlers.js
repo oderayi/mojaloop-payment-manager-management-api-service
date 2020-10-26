@@ -229,14 +229,15 @@ const uploadClientCSR = async(ctx) => {
 const createClientCSR = async(ctx) => {
     
     const { dfspId, mcmServerEndpoint, privateKeyLength, privateKeyAlgorithm, 
-        dfspCsrParameters } = ctx.state.conf;
+        dfspCsrParameters, dfspCaPath, wsUrl } = ctx.state.conf;
 
     const certModel = new CertificatesModel({
         dfspId,
         mcmServerEndpoint,
         envId: ctx.params.envId,
         logger: ctx.state.logger,
-        storage: ctx.state.storage
+        storage: ctx.state.storage,
+        wsUrl: wsUrl
     });
 
     const csrParameters = {
@@ -247,21 +248,37 @@ const createClientCSR = async(ctx) => {
 
     const createdCSR = await certModel.createClientCSR(csrParameters);
     ctx.body = await certModel.uploadClientCSR(createdCSR.csr);
+
+    //Exchange inbound configuration
+    await certModel.exchangeInboundSdkConfiguration(createdCSR, dfspCaPath);
+
+    //Exchange outbound configuration
+    // const inboundEnrollmentId = ctx.body.id;
+    // // call the hub to generate the certificate (sign the CSR)
+    // const inboundEnrollmentSigned = await certModel.signInboundEnrollment(inboundEnrollmentId);
+    // // FIXME: Check inboundEnrollmentSigned.state === CERT_SIGNED
+    // ctx.state.logger.push({inboundEnrollmentSigned}).log('inboundEnrollmentSigned');
+
+    // //retrieve hub CA 
+    // await getHubCAS(ctx);
+    // const hubCAs = ctx.body;
+    // ctx.state.logger.push({hubCAs}).log('hubCAs');
+
+    // const hubCA = hubCAs.find(hubCa => hubCa.id === inboundEnrollmentSigned.hubCAId);
+    // ctx.state.logger.push({hubCA}).log('hubCA');
+
+    //await certModel.exchangeOutboundSdkConfiguration(hubCA, createdCSR.key);
+
     
-    const inboundEnrollmentId = ctx.body.id;
-    // call the hub to generate the certificate (sign the CSR)
-    const inboundEnrollmentSigned = await certModel.signInboundEnrollment(inboundEnrollmentId);
 
-    // FIXME: Check inboundEnrollmentSigned.state === CERT_SIGNED
-    ctx.state.logger.push({inboundEnrollmentSigned}).log('inboundEnrollmentSigned');
 
-    //retrieve hub CA 
-    await getHubCAS(ctx);
-    const hubCAs = ctx.body;
-    ctx.state.logger.push({hubCAs}).log('hubCAs');
+    
 
-    const hubCA = hubCAs.find(hubCa => hubCa.id === inboundEnrollmentSigned.hubCAId);
-    ctx.state.logger.push({hubCA}).log('hubCA');
+
+
+    //CCall CertificatesModel -> ConnectorModel
+
+
 };
 
 const getClientCertificates = async(ctx) => {

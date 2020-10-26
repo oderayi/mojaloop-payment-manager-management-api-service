@@ -14,7 +14,7 @@ const { oas } = require('koa-oas3');
 
 const http = require('http');
 const path = require('path');
-const { MCMStateModel, Storage } = require('@modusbox/mcm-client');
+const { MCMStateModel, Storage } = require('@internal/model');
 
 const { Logger, Transports } = require('@internal/log');
 
@@ -78,7 +78,8 @@ class UIAPIServer {
             logger: this._logger,
             tlsServerPrivateKey: this._conf.tlsServerPrivateKey,
             dfspCaPath: this._conf.dfspCaPath,
-            auth: this._conf.auth
+            auth: this._conf.auth,
+            wsUrl: this._conf.wsUrl
         });
 
         return this._server;
