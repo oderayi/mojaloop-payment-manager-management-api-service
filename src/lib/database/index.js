@@ -38,7 +38,6 @@ async function syncDB({redisCache, db, logger}) {
     };
 
     const cacheKey = async (key) => {
-        logger.log(`syncing key ${key}`);
         const data = await redisCache.get(key);
 
         // Workaround for *initiatedTimestamp* until SDK populates it in Redis
@@ -64,8 +63,6 @@ async function syncDB({redisCache, db, logger}) {
             raw: JSON.stringify(data),
         };
 
-        logger.log(`syncing row: ${util.inspect(row)}`);
-
         const keyIndex = cachedPendingKeys.indexOf(key);
         if (keyIndex === -1) {
             await db('transfer').insert(row);
@@ -85,7 +82,6 @@ async function syncDB({redisCache, db, logger}) {
     };
 
     const keys = await redisCache.keys('transferModel_*');
-    logger.log(`found the following transfer models in cache: ${util.inspect(keys)}`);
     const uncachedOrPendingKeys = keys.filter((x) => cachedFulfilledKeys.indexOf(x) === -1);
     await asyncForEach(uncachedOrPendingKeys, cacheKey);
     logger.log('In-memory DB sync complete');
