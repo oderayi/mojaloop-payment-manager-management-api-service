@@ -88,18 +88,18 @@ class Transfer {
 
     _convertToTransferParty(party) {
         return {
-          type: '',
-          idType: party.idType,
-          idValue: party.idValue,
-          idSubType: party.idSubType,
-          displayName: party.displayName || `${party.firstName}${party.middleName ? ' ' + party.middleName : ''} ${party.lastName}`,
-          firstName: party.firstName,
-          middleName: party.middleName,
-          lastName: party.lastName,
-          dateOfBirth: party.dateOfBirth,
-          merchantClassificationCode: party.merchantClassificationCode,
-          fspId: party.fspId,
-          extensionList: party.extensionList,
+            type: '',
+            idType: party.idType,
+            idValue: party.idValue,
+            idSubType: party.idSubType,
+            displayName: party.displayName || `${party.firstName}${party.middleName ? ' ' + party.middleName : ''} ${party.lastName}`,
+            firstName: party.firstName,
+            middleName: party.middleName,
+            lastName: party.lastName,
+            dateOfBirth: party.dateOfBirth,
+            merchantClassificationCode: party.merchantClassificationCode,
+            fspId: party.fspId,
+            extensionList: party.extensionList,
         };
     }
 
@@ -166,7 +166,7 @@ class Transfer {
     async findOneDetail(id) {
         const rows = await this._db('transfer').where('id', id);
         if(rows.length > 0) {
-          return this._convertToApiDetailFormat(rows[0]);
+            return this._convertToApiDetailFormat(rows[0]);
         }
         return null;
     }
@@ -298,7 +298,7 @@ class Transfer {
                 status: Transfer.STATUSES[k],
                 count: 0,
             };
-        })
+        });
 
         rows.forEach(r => {
             ret[Transfer.STATUSES[r.success]] = {

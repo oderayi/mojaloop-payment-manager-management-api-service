@@ -57,16 +57,21 @@ module.exports = {
             },
         }
     },
+    auth: {
+        enabled:  env.get('AUTH_ENABLED').asBoolStrict(),
+        creds: {
+            user: env.get('AUTH_USER').asString(),
+            pass: env.get('AUTH_PASS').asString(),
+        }
+    },
     mcmServerEndpoint: env.get('MCM_SERVER_ENDPOINT').required().asString(),
     mcmClientRefreshInternal: env.get('MCM_CLIENT_REFRESH_INTERVAL').default(300).asString(),
     mcmClientSecretsLocation: env.get('MCM_CLIENT_SECRETS_LOCATION').required().asString(),
-    authEnabled: env.get('AUTH_ENABLED').asBoolStrict(),
     tlsServerPrivateKey: env.get('TLS_SERVER_PRIVATE_KEY').required().asString(),
     dfspId: env.get('DFSP_ID').required().asString(),
     envId: env.get('ENV_ID').required().asString(),
     privateKeyLength: env.get('PRIVATE_KEY_LENGTH').default(4096).asIntPositive(),
     privateKeyAlgorithm: env.get('PRIVATE_KEY_ALGORITHM').default('rsa').asString(),
     dfspCsrParameters: env.get('DFSP_CSR_PARAMETERS').asJsonConfig(),
-    dfspCaPath: env.get('DFSP_CA_PATH').required().asString(),
-    dfspCsrEncryptedKey: env.get('DFSP_CSR_KEY').required().asString()
+    dfspCaPath: env.get('DFSP_CA_PATH').required().asString()
 };

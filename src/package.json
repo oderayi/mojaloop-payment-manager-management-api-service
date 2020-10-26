@@ -1,22 +1,18 @@
 {
   "name": "mojaloop-payment-manager-management-api-service",
-  "version": "1.7.4",
+  "version": "1.8.4",
   "description": "Mojaloop Payment Manager - Management API Service",
   "main": "index.js",
   "author": "Murthy kakarlamudi, ModusBox Inc.",
   "contributors": [
     "Murthy Kakarlamudi <murthy@modusbox.com>",
     "Yevhen Kyriukha <yevhen.kyriukha@modusbox.com>",
-    "James Bush <james.bush@modusbox.com>"
+    "James Bush <james.bush@modusbox.com>",
+    "Kamuela Franco <kamuela.franco@modusbox.com>"
   ],
   "repository": {
     "type": "git",
     "url": "git://github.com/modusintegration/mojaloop-payment-manager-management-api-service.git"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint"
-    }
   },
   "scripts": {
     "lint": "eslint .",
@@ -24,14 +20,20 @@
     "test": "jest --ci --reporters=default --reporters=jest-junit --env=node test/unit",
     "test:int": "jest --ci --reporters=default --reporters=jest-junit --env=node test/integration --forceExit"
   },
+  "jest": {
+    "setupFiles": [
+      "<rootDir>/test/jest/setEnvVars.js"
+    ]
+  },  
   "dependencies": {
     "@internal/database": "file:lib/database",
     "@internal/log": "file:lib/log",
     "@internal/model": "file:lib/model",
     "@internal/randomphrase": "file:lib/randomphrase",
-    "@modusbox/mcm-client": "^1.0.25",
+    "@modusbox/mcm-client": "^1.0.27",
     "@mojaloop/sdk-standard-components": "^11.4.0",
     "ajv": "^6.12.4",
+    "babel-eslint": "^10.1.0",
     "co-body": "^6.0.0",
     "dotenv": "^8.2.0",
     "env-var": "^6.3.0",

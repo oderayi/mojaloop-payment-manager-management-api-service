@@ -27,6 +27,6 @@ exports.up = async (knex) => knex.schema.createTable(TABLE_NAME, (table) => {
     table.string('raw');
 });
 
-exports.down = function (knex, Promise) {
+exports.down = function (knex) {
     return knex.schema.dropTableIfExists(TABLE_NAME);
 };
