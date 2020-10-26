@@ -8,7 +8,6 @@
  *       Yevhen Kyriukha - yevhen.kyriukha@modusbox.com                   *
  **************************************************************************/
 
-const util = require('util');
 //const { Errors } = require('@mojaloop/sdk-standard-components');
 
 
@@ -120,7 +119,7 @@ class Transfer {
 
         const query = this._db('transfer').whereRaw('true');
         if (opts.id) {
-          query.andWhere('id', '=', `${opts.id}`);
+            query.andWhere('id', '=', `${opts.id}`);
         }
         if (opts.startTimestamp) {
             query.andWhere('created_at', '>=', new Date(opts.startTimestamp).getTime());
