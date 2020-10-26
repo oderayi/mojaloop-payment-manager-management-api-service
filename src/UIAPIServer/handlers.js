@@ -8,8 +8,6 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                         *
  **************************************************************************/
 
-const util = require('util');
-
 const {
     Transfer,
     Balances,
@@ -47,7 +45,7 @@ const getTransferErrors = async(ctx) => {
         logger: ctx.state.logger,
     });
     ctx.body = await transfer.findErrors();
-}
+};
 
 const getTransferDetail = async (ctx) => {
     const transfer = new Transfer({
@@ -57,12 +55,12 @@ const getTransferDetail = async (ctx) => {
 
     const res = await transfer.findOneDetail(ctx.params.transferId);
     if(res) {
-      ctx.body = res;
+        ctx.body = res;
     }
     else {
-      ctx.status = 404;
+        ctx.status = 404;
     }
-}
+};
 
 const getTransferStatusSummary = async (ctx) => {
     const { startTimestamp, endTimestamp } = ctx.query;
@@ -229,8 +227,9 @@ const uploadClientCSR = async(ctx) => {
 };
 
 const createClientCSR = async(ctx) => {
+    
     const { dfspId, mcmServerEndpoint, privateKeyLength, privateKeyAlgorithm, 
-        dfspCsrParameters, dfspCsrEncryptedKey } = ctx.state.conf;
+        dfspCsrParameters } = ctx.state.conf;
 
     const certModel = new CertificatesModel({
         dfspId,
@@ -246,8 +245,23 @@ const createClientCSR = async(ctx) => {
         parameters: dfspCsrParameters
     };
 
-    const createdCSR = await certModel.createClientCSR(csrParameters, dfspCsrEncryptedKey);
-    ctx.body = await certModel.uploadClientCSR(createdCSR);
+    const createdCSR = await certModel.createClientCSR(csrParameters);
+    ctx.body = await certModel.uploadClientCSR(createdCSR.csr);
+    
+    const inboundEnrollmentId = ctx.body.id;
+    // call the hub to generate the certificate (sign the CSR)
+    const inboundEnrollmentSigned = await certModel.signInboundEnrollment(inboundEnrollmentId);
+
+    // FIXME: Check inboundEnrollmentSigned.state === CERT_SIGNED
+    ctx.state.logger.push({inboundEnrollmentSigned}).log('inboundEnrollmentSigned');
+
+    //retrieve hub CA 
+    await getHubCAS(ctx);
+    const hubCAs = ctx.body;
+    ctx.state.logger.push({hubCAs}).log('hubCAs');
+
+    const hubCA = hubCAs.find(hubCa => hubCa.id === inboundEnrollmentSigned.hubCAId);
+    ctx.state.logger.push({hubCA}).log('hubCA');
 };
 
 const getClientCertificates = async(ctx) => {
