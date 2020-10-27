@@ -229,7 +229,7 @@ const uploadClientCSR = async(ctx) => {
 const createClientCSR = async(ctx) => {
     
     const { dfspId, mcmServerEndpoint, privateKeyLength, privateKeyAlgorithm, 
-        dfspCsrParameters, dfspCaPath, wsUrl } = ctx.state.conf;
+        dfspClientCsrParameters, dfspCaPath, wsUrl } = ctx.state.conf;
 
     const certModel = new CertificatesModel({
         dfspId,
@@ -243,10 +243,10 @@ const createClientCSR = async(ctx) => {
     const csrParameters = {
         privateKeyAlgorithm: privateKeyAlgorithm,
         privateKeyLength: privateKeyLength,
-        parameters: dfspCsrParameters
+        parameters: dfspClientCsrParameters
     };
 
-    const createdCSR = await certModel.createClientCSR(csrParameters);
+    const createdCSR = await certModel.createCSR(csrParameters);
     ctx.body = await certModel.uploadClientCSR(createdCSR.csr);
 
     //Exchange inbound configuration
@@ -269,15 +269,7 @@ const createClientCSR = async(ctx) => {
 
     //await certModel.exchangeOutboundSdkConfiguration(hubCA, createdCSR.key);
 
-    
-
-
-    
-
-
-
     //CCall CertificatesModel -> ConnectorModel
-
 
 };
 
@@ -431,6 +423,41 @@ const getMonetaryZones = async(ctx) => {
     ctx.body = responseData;
 };
 
+const generateAllCerts = async(ctx) => {
+    
+    const { dfspId, mcmServerEndpoint, privateKeyLength, privateKeyAlgorithm, 
+        dfspServerCsrParameters, dfspCaPath, wsUrl, wsPort } = ctx.state.conf;
+
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+        storage: ctx.state.storage,
+        wsUrl: wsUrl,
+        wsPort: wsPort
+    });
+
+    const csrParameters = {
+        privateKeyAlgorithm: privateKeyAlgorithm,
+        privateKeyLength: privateKeyLength,
+        parameters: dfspServerCsrParameters
+    };
+
+    //FIXME: change to createCSR and csrParameters different
+    const createdCSR = await certModel.createCSR(csrParameters);
+
+    console.log('generateAllCertificates createdCsr :: ', createdCSR);
+
+
+    //Exchange inbound configuration
+    await certModel.exchangeInboundSdkConfiguration(createdCSR, dfspCaPath);
+
+    //FIXME: return something relevant related to generate all certs
+    ctx.body = {id: 1};
+
+};
+
 
 module.exports = {
     '/health': {
@@ -515,5 +542,8 @@ module.exports = {
     },
     '/environments/{envId}/monetaryzones/{monetaryZoneId}/dfsps':{
         get: getDFSPSByMonetaryZone
+    },
+    '/environments/{envId}/dfsp/allcerts':{
+        post: generateAllCerts
     } 
 };

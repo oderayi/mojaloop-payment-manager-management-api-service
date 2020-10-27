@@ -23,7 +23,7 @@ describe('create dfsp csr and upload to mcm', () => {
                     dfspId: 'pm4mltest',
                     privateKeyAlgorithm: csrParameters.privateKeyAlgorithm,
                     privateKeyLength : csrParameters.privateKeyLength,
-                    dfspCsrParameters: csrParameters.parameters
+                    dfspClientCsrParameters: csrParameters.parameters
                 },
                 logger: {
                     push: (obj) => {
@@ -37,7 +37,7 @@ describe('create dfsp csr and upload to mcm', () => {
             params: { 'envId': '1' }
         };
 
-        const createClientCSRSpy = jest.spyOn(CertificatesModel.prototype, 'createClientCSR')
+        const createCSRSpy = jest.spyOn(CertificatesModel.prototype, 'createCSR')
             .mockImplementation(() => { return createdCsrMock; });
 
         const uploadClientCSRSpy = jest.spyOn(CertificatesModel.prototype, 'uploadClientCSR')
@@ -52,12 +52,12 @@ describe('create dfsp csr and upload to mcm', () => {
 
         await handlers['/environments/{envId}/dfsp/clientcerts/csr'].post(context);
 
-        expect(createClientCSRSpy).toHaveBeenCalledTimes(1);
+        expect(createCSRSpy).toHaveBeenCalledTimes(1);
         expect(uploadClientCSRSpy).toHaveBeenCalledTimes(1);
         expect(signInboundEnrollmentSpy).toHaveBeenCalledTimes(1);
         expect(getHubCASSpy).toHaveBeenCalledTimes(1);
 
-        expect(createClientCSRSpy.mock.calls[0][0]).toStrictEqual(csrParameters);
+        expect(createCSRSpy.mock.calls[0][0]).toStrictEqual(csrParameters);
 
         expect(uploadClientCSRSpy.mock.calls[0][0]).toStrictEqual(createdCsrMock.csr);
     });
