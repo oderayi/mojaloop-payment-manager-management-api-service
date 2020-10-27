@@ -229,7 +229,7 @@ const uploadClientCSR = async(ctx) => {
 const createClientCSR = async(ctx) => {
     
     const { dfspId, mcmServerEndpoint, privateKeyLength, privateKeyAlgorithm, 
-        dfspCsrParameters, dfspCaPath, wsUrl } = ctx.state.conf;
+        dfspCsrParameters, wsUrl } = ctx.state.conf;
 
     const certModel = new CertificatesModel({
         dfspId,
@@ -249,35 +249,10 @@ const createClientCSR = async(ctx) => {
     const createdCSR = await certModel.createClientCSR(csrParameters);
     ctx.body = await certModel.uploadClientCSR(createdCSR.csr);
 
-    //Exchange inbound configuration
-    await certModel.exchangeInboundSdkConfiguration(createdCSR, dfspCaPath);
-
     //Exchange outbound configuration
-    // const inboundEnrollmentId = ctx.body.id;
-    // // call the hub to generate the certificate (sign the CSR)
-    // const inboundEnrollmentSigned = await certModel.signInboundEnrollment(inboundEnrollmentId);
-    // // FIXME: Check inboundEnrollmentSigned.state === CERT_SIGNED
-    // ctx.state.logger.push({inboundEnrollmentSigned}).log('inboundEnrollmentSigned');
-
-    // //retrieve hub CA 
-    // await getHubCAS(ctx);
-    // const hubCAs = ctx.body;
-    // ctx.state.logger.push({hubCAs}).log('hubCAs');
-
-    // const hubCA = hubCAs.find(hubCa => hubCa.id === inboundEnrollmentSigned.hubCAId);
-    // ctx.state.logger.push({hubCA}).log('hubCA');
-
-    //await certModel.exchangeOutboundSdkConfiguration(hubCA, createdCSR.key);
-
-    
-
-
-    
-
-
-
-    //CCall CertificatesModel -> ConnectorModel
-
+    const inboundEnrollmentId = ctx.body.id;
+    // call the hub to generate the certificate (sign the CSR)
+    await certModel.exchangeOutboundSdkConfiguration(inboundEnrollmentId, createdCSR.key);
 
 };
 
@@ -323,6 +298,17 @@ const getHubCAS = async(ctx) => {
         logger: ctx.state.logger,
     });
     ctx.body = await hub.getHubCAS();
+};
+
+const getRootHubCA = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const hub = new Hub({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await hub.getRootHubCA();
 };
 
 /**
@@ -506,6 +492,9 @@ module.exports = {
     },
     '/environments/{envId}/hub/cas': {
         get: getHubCAS,
+    },
+    '/environments/{envId}/ca/rootCert': {
+        get: getRootHubCA,
     },
     '/environments/{envId}/hub/servercerts': {
         get: getHubServerCertificates,

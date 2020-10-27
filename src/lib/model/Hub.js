@@ -51,6 +51,15 @@ class Hub {
     }
 
     /**
+     * Gets root Hub CA
+     */
+    async getRootHubCA() {
+        return this._certificateModel.getRootHubCA({
+            envId : this._envId,
+        });
+    }    
+
+    /**
      *
      * @param opts {Object}
      * @param [opts.direction] {string}
