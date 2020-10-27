@@ -43,7 +43,7 @@ async function syncDB({redisCache, db, logger}) {
         // const initiatedTimestamp = new Date(data.initiatedTimestamp).getTime();
         const initiatedTimestamp = data.initiatedTimestamp ? new Date(data.initiatedTimestamp).getTime() : new Date().getTime();
 
-        const completedTimestamp = data.fulfil ? new Date(data.fulfil.completedTimestamp) : null;
+        const completedTimestamp = data.fulfil ? new Date(data.fulfil.body.completedTimestamp) : null;
 
         const row = {
             id: data.transferId,

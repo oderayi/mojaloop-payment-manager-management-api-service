@@ -119,7 +119,7 @@ class Transfer {
 
         const query = this._db('transfer').whereRaw('true');
         if (opts.id) {
-            query.andWhere('id', 'ILIKE', `%${opts.id}%`);
+            query.andWhere('id', 'LIKE', `%${opts.id}%`);
         }
         if (opts.startTimestamp) {
             query.andWhere('created_at', '>=', new Date(opts.startTimestamp).getTime());
@@ -128,10 +128,10 @@ class Transfer {
             query.andWhere('created_at', '<', new Date(opts.endTimestamp).getTime());
         }
         if (opts.institution) {
-            query.andWhere('dfsp', 'ILIKE', `%${opts.institution}%`);
+            query.andWhere('dfsp', 'LIKE', `%${opts.institution}%`);
         }
         if (opts.batchId) {
-            query.andWhere('batchId', 'ILIKE', `%${opts.batchId}%`);
+            query.andWhere('batchId', 'LIKE', `%${opts.batchId}%`);
         }
         if (opts.status) {
             if (opts.status === 'PENDING') {
