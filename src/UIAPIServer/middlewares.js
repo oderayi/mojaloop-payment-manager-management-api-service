@@ -12,6 +12,7 @@ const util = require('util');
 const Router = require('koa-router');
 
 const randomPhrase = require('@internal/randomphrase');
+const { HTTPResponseError } = require('@modusbox/mcm-client');
 
 /**
  * Log raw to console as a last resort
@@ -72,12 +73,12 @@ const createRouter = (handlerMap) => {
                     ctx.state.logger.log(`Error: ${e.stack || util.inspect(e)}`);
                     ctx.body = { errorMessage: e.message };
                     ctx.status = 500;
-                    // if (e instanceof HTTPResponseError) {
-                    // ctx.body = e.toJSON();
-                    // ctx.status = 500;
-                    // } else {
-                    //     throw e;
-                    // }
+                    if (e instanceof HTTPResponseError) {
+                        ctx.body = e.getData().res.data;
+                        ctx.status = e.getData().res.statusCode;
+                    } else {
+                        throw e;
+                    }
                 }
             });
         }

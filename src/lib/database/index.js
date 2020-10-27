@@ -11,7 +11,6 @@
  *       James Bush - james.bush@modusbox.com                             *
  **************************************************************************/
 
-const util = require('util');
 const knex = require('knex');
 const Cache = require('./cache');
 
@@ -38,14 +37,13 @@ async function syncDB({redisCache, db, logger}) {
     };
 
     const cacheKey = async (key) => {
-        logger.log(`syncing key ${key}`);
         const data = await redisCache.get(key);
 
         // Workaround for *initiatedTimestamp* until SDK populates it in Redis
         // const initiatedTimestamp = new Date(data.initiatedTimestamp).getTime();
         const initiatedTimestamp = data.initiatedTimestamp ? new Date(data.initiatedTimestamp).getTime() : new Date().getTime();
 
-        const completedTimestamp = data.fulfil ? new Date(data.fulfil.completedTimestamp) : null;
+        const completedTimestamp = data.fulfil ? new Date(data.fulfil.body.completedTimestamp) : null;
 
         const row = {
             id: data.transferId,
@@ -63,8 +61,6 @@ async function syncDB({redisCache, db, logger}) {
             success: getTransferStatus(data),
             raw: JSON.stringify(data),
         };
-
-        logger.log(`syncing row: ${util.inspect(row)}`);
 
         const keyIndex = cachedPendingKeys.indexOf(key);
         if (keyIndex === -1) {
@@ -85,7 +81,6 @@ async function syncDB({redisCache, db, logger}) {
     };
 
     const keys = await redisCache.keys('transferModel_*');
-    logger.log(`found the following transfer models in cache: ${util.inspect(keys)}`);
     const uncachedOrPendingKeys = keys.filter((x) => cachedFulfilledKeys.indexOf(x) === -1);
     await asyncForEach(uncachedOrPendingKeys, cacheKey);
     logger.log('In-memory DB sync complete');

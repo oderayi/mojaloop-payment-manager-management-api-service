@@ -8,7 +8,6 @@
  *       Yevhen Kyriukha - yevhen.kyriukha@modusbox.com                   *
  **************************************************************************/
 
-const util = require('util');
 //const { Errors } = require('@mojaloop/sdk-standard-components');
 
 
@@ -26,7 +25,7 @@ class Transfer {
 
     _convertToApiFormat(transfer) {
         const raw = JSON.parse(transfer.raw);
-        this._logger.log(`raw transfer: ${util.inspect(raw, { depth: Infinity })}`);
+
         return {
             id: transfer.id,
             batchId: transfer.batch_id,
@@ -54,7 +53,7 @@ class Transfer {
 
     _convertToApiDetailFormat(transfer) {
         const raw = JSON.parse(transfer.raw);
-        this._logger.log(`raw transfer: ${util.inspect(raw, { depth: Infinity })}`);
+
         return {
             id: transfer.id,
             amount: raw.amount,
@@ -76,11 +75,11 @@ class Transfer {
                 payerParty: this._convertToTransferParty(raw.from),
                 payeeParty: this._convertToTransferParty(raw.to),
                 getPartiesRequest: { headers: {}, body: {} },
-                getPartiesResponse: { headers: {}, body: {} },
+                getPartiesResponse: raw.getPartiesResponse,
                 quoteRequest: { headers: {}, body: {} },
-                quoteResponse: { headers: {}, body: raw.quoteResponse },
+                quoteResponse: raw.quoteResponse,
                 transferPrepare: { headers: {}, body: {} },
-                transferFulfilment: { headers: {}, body: raw.fulfil},
+                transferFulfilment: raw.fulfil,
                 lastError: raw.lastError,
             }
         };
@@ -119,6 +118,9 @@ class Transfer {
         const DEFAULT_LIMIT = 100;
 
         const query = this._db('transfer').whereRaw('true');
+        if (opts.id) {
+            query.andWhere('id', 'LIKE', `%${opts.id}%`);
+        }
         if (opts.startTimestamp) {
             query.andWhere('created_at', '>=', new Date(opts.startTimestamp).getTime());
         }
@@ -126,10 +128,10 @@ class Transfer {
             query.andWhere('created_at', '<', new Date(opts.endTimestamp).getTime());
         }
         if (opts.institution) {
-            query.andWhere('dfsp', 'ILIKE', `%${opts.institution}%`);
+            query.andWhere('dfsp', 'LIKE', `%${opts.institution}%`);
         }
         if (opts.batchId) {
-            query.andWhere('batchId', 'ILIKE', `%${opts.batchId}%`);
+            query.andWhere('batchId', 'LIKE', `%${opts.batchId}%`);
         }
         if (opts.status) {
             if (opts.status === 'PENDING') {

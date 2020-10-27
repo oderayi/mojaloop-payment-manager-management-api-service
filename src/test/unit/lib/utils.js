@@ -37,7 +37,7 @@ const addTransferToCache = async (db, opts) => {
     if (opts.isPending) {
         delete transfer.fulfil;
     } else {
-        transfer.fulfil.completedTimestamp = opts.completedTimestamp || transfer.fulfil.completedTimestamp;
+        transfer.fulfil.body.completedTimestamp = opts.completedTimestamp || transfer.fulfil.body.completedTimestamp;
     }
 
     await db.redisCache.set(`transferModel_${opts.transferId}`, JSON.stringify(transfer));
