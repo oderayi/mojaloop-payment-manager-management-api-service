@@ -72,7 +72,9 @@ module.exports = {
     envId: env.get('ENV_ID').required().asString(),
     privateKeyLength: env.get('PRIVATE_KEY_LENGTH').default(4096).asIntPositive(),
     privateKeyAlgorithm: env.get('PRIVATE_KEY_ALGORITHM').default('rsa').asString(),
-    dfspCsrParameters: env.get('DFSP_CSR_PARAMETERS').asJsonConfig(),
+    dfspClientCsrParameters: env.get('DFSP_CLIENT_CSR_PARAMETERS').asJsonConfig(),
+    dfspServerCsrParameters: env.get('DFSP_SERVER_CSR_PARAMETERS').asJsonConfig(),
     dfspCaPath: env.get('DFSP_CA_PATH').required().asString(),
-    wsUrl: env.get('WS_URL').required().asString()
+    wsUrl: env.get('WS_URL').required().asString(),
+    wsPort: env.get('WS_PORT').default('4003').asPortNumber()
 };

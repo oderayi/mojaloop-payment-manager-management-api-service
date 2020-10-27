@@ -18,6 +18,7 @@ class CertificatesModel {
         this._envId = opts.envId;
         this._storage = opts.storage;
         this._wsUrl = opts.wsUrl;
+        this._wsPort = opts.wsPort;
 
         this._mcmClientDFSPCertModel = new DFSPCertificateModel({
             dfspId: opts.dfspId,
@@ -41,7 +42,7 @@ class CertificatesModel {
         });
     }
 
-    async createClientCSR(csrParameters) {
+    async createCSR(csrParameters) {
         const createdCSR = await this._mcmClientDFSPCertModel.createCSR({
             envId : this._envId,
             csrParameters: csrParameters
