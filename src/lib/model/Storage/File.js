@@ -10,7 +10,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 const Storage = require('./Storage');
 
 const readFileAsync = fs.promises.readFile;

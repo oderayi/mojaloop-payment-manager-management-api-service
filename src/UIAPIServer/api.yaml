@@ -769,12 +769,8 @@ paths:
       summary: autogenerate and configure all certificates
       description: TBD
       responses:
-        "200":
+        "201":
           description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SuccessfulEnrollment"
   /monetaryzones:
     get:
       tags:

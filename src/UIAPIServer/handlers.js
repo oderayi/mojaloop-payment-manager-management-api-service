@@ -229,7 +229,7 @@ const uploadClientCSR = async(ctx) => {
 const createClientCSR = async(ctx) => {
     
     const { dfspId, mcmServerEndpoint, privateKeyLength, privateKeyAlgorithm, 
-        dfspClientCsrParameters, dfspCaPath, wsUrl } = ctx.state.conf;
+        dfspClientCsrParameters } = ctx.state.conf;
 
     const certModel = new CertificatesModel({
         dfspId,
@@ -237,7 +237,6 @@ const createClientCSR = async(ctx) => {
         envId: ctx.params.envId,
         logger: ctx.state.logger,
         storage: ctx.state.storage,
-        wsUrl: wsUrl
     });
 
     const csrParameters = {
@@ -248,29 +247,6 @@ const createClientCSR = async(ctx) => {
 
     const createdCSR = await certModel.createCSR(csrParameters);
     ctx.body = await certModel.uploadClientCSR(createdCSR.csr);
-
-    //Exchange inbound configuration
-    await certModel.exchangeInboundSdkConfiguration(createdCSR, dfspCaPath);
-
-    //Exchange outbound configuration
-    // const inboundEnrollmentId = ctx.body.id;
-    // // call the hub to generate the certificate (sign the CSR)
-    // const inboundEnrollmentSigned = await certModel.signInboundEnrollment(inboundEnrollmentId);
-    // // FIXME: Check inboundEnrollmentSigned.state === CERT_SIGNED
-    // ctx.state.logger.push({inboundEnrollmentSigned}).log('inboundEnrollmentSigned');
-
-    // //retrieve hub CA 
-    // await getHubCAS(ctx);
-    // const hubCAs = ctx.body;
-    // ctx.state.logger.push({hubCAs}).log('hubCAs');
-
-    // const hubCA = hubCAs.find(hubCa => hubCa.id === inboundEnrollmentSigned.hubCAId);
-    // ctx.state.logger.push({hubCA}).log('hubCA');
-
-    //await certModel.exchangeOutboundSdkConfiguration(hubCA, createdCSR.key);
-
-    //CCall CertificatesModel -> ConnectorModel
-
 };
 
 const getClientCertificates = async(ctx) => {
@@ -444,18 +420,13 @@ const generateAllCerts = async(ctx) => {
         parameters: dfspServerCsrParameters
     };
 
-    //FIXME: change to createCSR and csrParameters different
     const createdCSR = await certModel.createCSR(csrParameters);
-
-    console.log('generateAllCertificates createdCsr :: ', createdCSR);
-
 
     //Exchange inbound configuration
     await certModel.exchangeInboundSdkConfiguration(createdCSR, dfspCaPath);
 
-    //FIXME: return something relevant related to generate all certs
-    ctx.body = {id: 1};
-
+    //FIXME: return something relevant when doing https://modusbox.atlassian.net/browse/MP-2135
+    ctx.body = '';
 };
 
 

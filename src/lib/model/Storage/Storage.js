@@ -10,12 +10,15 @@
 
 class Storage {
     getSecret(key) {
+        console.log('getSecret not implemented using key ', key);
     }
 
     setSecret(key, value) {
+        console.log(`setSecret not implemented using key ${key} and value ${value} `);
     }
 
     deleteSecret(key) {
+        console.log('getSecret not implemented using key ', key);
     }
 }
 

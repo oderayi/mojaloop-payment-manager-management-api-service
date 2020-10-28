@@ -108,7 +108,6 @@ class CertificatesModel {
     }
 
     async exchangeInboundSdkConfiguration(csr, dfspCaPath) {
-        console.log('about to sign csr and exchange with sdk :: ');
         const dfspCA = await this._storage.getSecret(dfspCaPath);
 
         if (dfspCA) {
@@ -119,10 +118,7 @@ class CertificatesModel {
             //key generated with csr is encrypted
             const decryptedCsrPrivateKey = await embeddedPKIEngine.decryptKey(csr.key);
 
-            console.log('exchangeInboundSdkConfiguration :: ');
             await this._connectorModel.reconfigureInboundSdk(decryptedCsrPrivateKey, cert, dfspCA);
-
-            return cert;
 
         } else {
             throw new Error('Not signing dfsp own csr since dfsp CA  certificate is null or empty');

@@ -10,6 +10,7 @@
 
 const { DFSPCertificateModel, HubCertificateModel, HubEndpointModel, AuthModel, ConnectorModel } = require('@modusbox/mcm-client');
 const { EmbeddedPKIEngine } = require('mojaloop-connection-manager-pki-engine');
+const util = require('util');
 
 const DEFAULT_REFRESH_INTERVAL = 60;
 
