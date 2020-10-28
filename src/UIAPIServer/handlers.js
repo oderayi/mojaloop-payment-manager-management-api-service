@@ -23,12 +23,12 @@ const healthCheck = async(ctx) => {
 };
 
 const getTransfers = async (ctx) => {
-    const { startTimestamp, endTimestamp, institution, status, batchId, limit, offset } = ctx.query;
+    const { id, startTimestamp, endTimestamp, institution, status, batchId, limit, offset } = ctx.query;
     const transfer = new Transfer({
         db: ctx.state.db,
         logger: ctx.state.logger,
     });
-    ctx.body = await transfer.findAll({ startTimestamp, endTimestamp, institution, status, batchId, limit, offset });
+    ctx.body = await transfer.findAll({ id, startTimestamp, endTimestamp, institution, status, batchId, limit, offset });
 };
 
 const getTransfer = async (ctx) => {
@@ -293,6 +293,17 @@ const getHubCAS = async(ctx) => {
     ctx.body = await hub.getHubCAS();
 };
 
+const getRootHubCA = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const hub = new Hub({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await hub.getRootHubCA();
+};
+
 /**
  * Get DFSP Server Certificates
  * @param {*} ctx
@@ -504,6 +515,9 @@ module.exports = {
     },
     '/environments/{envId}/hub/cas': {
         get: getHubCAS,
+    },
+    '/environments/{envId}/ca/rootCert': {
+        get: getRootHubCA,
     },
     '/environments/{envId}/hub/servercerts': {
         get: getHubServerCertificates,
