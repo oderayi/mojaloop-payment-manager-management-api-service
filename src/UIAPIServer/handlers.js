@@ -229,39 +229,24 @@ const uploadClientCSR = async(ctx) => {
 const createClientCSR = async(ctx) => {
     
     const { dfspId, mcmServerEndpoint, privateKeyLength, privateKeyAlgorithm, 
-        dfspCsrParameters } = ctx.state.conf;
+        dfspClientCsrParameters } = ctx.state.conf;
 
     const certModel = new CertificatesModel({
         dfspId,
         mcmServerEndpoint,
         envId: ctx.params.envId,
         logger: ctx.state.logger,
-        storage: ctx.state.storage
+        storage: ctx.state.storage,
     });
 
     const csrParameters = {
         privateKeyAlgorithm: privateKeyAlgorithm,
         privateKeyLength: privateKeyLength,
-        parameters: dfspCsrParameters
+        parameters: dfspClientCsrParameters
     };
 
-    const createdCSR = await certModel.createClientCSR(csrParameters);
+    const createdCSR = await certModel.createCSR(csrParameters);
     ctx.body = await certModel.uploadClientCSR(createdCSR.csr);
-    
-    const inboundEnrollmentId = ctx.body.id;
-    // call the hub to generate the certificate (sign the CSR)
-    const inboundEnrollmentSigned = await certModel.signInboundEnrollment(inboundEnrollmentId);
-
-    // FIXME: Check inboundEnrollmentSigned.state === CERT_SIGNED
-    ctx.state.logger.push({inboundEnrollmentSigned}).log('inboundEnrollmentSigned');
-
-    //retrieve hub CA 
-    await getHubCAS(ctx);
-    const hubCAs = ctx.body;
-    ctx.state.logger.push({hubCAs}).log('hubCAs');
-
-    const hubCA = hubCAs.find(hubCa => hubCa.id === inboundEnrollmentSigned.hubCAId);
-    ctx.state.logger.push({hubCA}).log('hubCA');
 };
 
 const getClientCertificates = async(ctx) => {
@@ -306,6 +291,17 @@ const getHubCAS = async(ctx) => {
         logger: ctx.state.logger,
     });
     ctx.body = await hub.getHubCAS();
+};
+
+const getRootHubCA = async(ctx) => {
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const hub = new Hub({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+    });
+    ctx.body = await hub.getRootHubCA();
 };
 
 /**
@@ -414,6 +410,36 @@ const getMonetaryZones = async(ctx) => {
     ctx.body = responseData;
 };
 
+const generateAllCerts = async(ctx) => {
+    
+    const { dfspId, mcmServerEndpoint, privateKeyLength, privateKeyAlgorithm, 
+        dfspServerCsrParameters, dfspCaPath, wsUrl, wsPort } = ctx.state.conf;
+
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+        storage: ctx.state.storage,
+        wsUrl: wsUrl,
+        wsPort: wsPort
+    });
+
+    const csrParameters = {
+        privateKeyAlgorithm: privateKeyAlgorithm,
+        privateKeyLength: privateKeyLength,
+        parameters: dfspServerCsrParameters
+    };
+
+    const createdCSR = await certModel.createCSR(csrParameters);
+
+    //Exchange inbound configuration
+    await certModel.exchangeInboundSdkConfiguration(createdCSR, dfspCaPath);
+
+    //FIXME: return something relevant when doing https://modusbox.atlassian.net/browse/MP-2135
+    ctx.body = '';
+};
+
 
 module.exports = {
     '/health': {
@@ -490,6 +516,9 @@ module.exports = {
     '/environments/{envId}/hub/cas': {
         get: getHubCAS,
     },
+    '/environments/{envId}/ca/rootCert': {
+        get: getRootHubCA,
+    },
     '/environments/{envId}/hub/servercerts': {
         get: getHubServerCertificates,
     },
@@ -498,5 +527,8 @@ module.exports = {
     },
     '/environments/{envId}/monetaryzones/{monetaryZoneId}/dfsps':{
         get: getDFSPSByMonetaryZone
+    },
+    '/environments/{envId}/dfsp/allcerts':{
+        post: generateAllCerts
     } 
 };

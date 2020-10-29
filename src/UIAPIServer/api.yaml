@@ -755,6 +755,22 @@ paths:
               schema:
                 $ref: "#/components/schemas/SuccessfulEnrollment"
       x-swagger-router-controller: DfspServerCerts
+  /environments/{envId}/dfsp/allcerts:
+    parameters:
+      - name: envId
+        in: path
+        description: ID of environment
+        required: true
+        schema:
+          type: string
+    post:
+      tags:
+        - DFSP-all-certificates-configuration
+      summary: autogenerate and configure all certificates
+      description: TBD
+      responses:
+        "201":
+          description: successful operation
   /monetaryzones:
     get:
       tags:

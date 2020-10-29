@@ -1,6 +1,6 @@
 {
   "name": "mojaloop-payment-manager-management-api-service",
-  "version": "1.8.8",
+  "version": "1.8.9",
   "description": "Mojaloop Payment Manager - Management API Service",
   "main": "index.js",
   "author": "Murthy kakarlamudi, ModusBox Inc.",
@@ -30,8 +30,9 @@
     "@internal/log": "file:lib/log",
     "@internal/model": "file:lib/model",
     "@internal/randomphrase": "file:lib/randomphrase",
-    "@modusbox/mcm-client": "1.0.27",
+    "@modusbox/mcm-client": "^1.0.29",
     "@mojaloop/sdk-standard-components": "^11.4.0",
+    "mojaloop-connection-manager-pki-engine": "^1.0.0",
     "ajv": "^6.12.4",
     "babel-eslint": "^10.1.0",
     "co-body": "^6.0.0",

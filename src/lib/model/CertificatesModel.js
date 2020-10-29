@@ -8,19 +8,31 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                   *
  **************************************************************************/
 
-const { DFSPCertificateModel } = require('@modusbox/mcm-client');
+const { DFSPCertificateModel, ConnectorModel, HubCertificateModel } = require('@modusbox/mcm-client');
+const { EmbeddedPKIEngine } = require('mojaloop-connection-manager-pki-engine');
+
 
 class CertificatesModel {
     constructor(opts) {
         this._logger = opts.logger;
         this._envId = opts.envId;
         this._storage = opts.storage;
+        this._wsUrl = opts.wsUrl;
+        this._wsPort = opts.wsPort;
 
         this._mcmClientDFSPCertModel = new DFSPCertificateModel({
             dfspId: opts.dfspId,
             logger: opts.logger,
             hubEndpoint: opts.mcmServerEndpoint
         });
+
+        this._certificateModel = new HubCertificateModel({
+            dfspId: opts.dfspId,
+            logger: opts.logger,
+            hubEndpoint: opts.mcmServerEndpoint,
+        });      
+
+        this._connectorModel = new ConnectorModel(opts);
     }
 
     async uploadClientCSR(body) {
@@ -30,7 +42,7 @@ class CertificatesModel {
         });
     }
 
-    async createClientCSR(csrParameters) {
+    async createCSR(csrParameters) {
         const createdCSR = await this._mcmClientDFSPCertModel.createCSR({
             envId : this._envId,
             csrParameters: csrParameters
@@ -101,6 +113,40 @@ class CertificatesModel {
             inboundEnrollmentId
         });
     }
+
+    async exchangeInboundSdkConfiguration(csr, dfspCaPath) {
+        const dfspCA = await this._storage.getSecret(dfspCaPath);
+
+        if (dfspCA) {
+            const embeddedPKIEngine = new EmbeddedPKIEngine(dfspCA, csr.key);
+            const cert = await embeddedPKIEngine.sign(csr.csr);
+            this._logger.log('Certificate created and signed :: ', cert);
+
+            //key generated with csr is encrypted
+            const decryptedCsrPrivateKey = await embeddedPKIEngine.decryptKey(csr.key);
+
+            await this._connectorModel.reconfigureInboundSdk(decryptedCsrPrivateKey, cert, dfspCA);
+
+        } else {
+            throw new Error('Not signing dfsp own csr since dfsp CA  certificate is null or empty');
+        }
+    }
+
+    async exchangeOutboundSdkConfiguration(inboundEnrollmentId, key) {
+
+        const inboundEnrollmentSigned = await this.signInboundEnrollment(inboundEnrollmentId);
+        // FIXME: Check inboundEnrollmentSigned.state === CERT_SIGNED
+        this._logger.push({inboundEnrollmentSigned}).log('inboundEnrollmentSigned');
+    
+        //retrieve hub CA 
+        const rootHubCA = await this._certificateModel.getRootHubCA({
+            envId : this._envId
+        });
+        this._logger.push({cert: rootHubCA.certificate}).log('hubCA');
+
+        console.log('exchangeInboundSdkConfiguration :: ');
+        await this._connectorModel.reconfigureOutboundSdk(rootHubCA.certificate, key, inboundEnrollmentSigned.certificate);
+    }    
 
     /**
      * Gets uploaded JWS certificate
