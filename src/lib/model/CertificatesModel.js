@@ -107,8 +107,8 @@ class CertificatesModel {
         });
     }
 
-    async signInboundEnrollment(inboundEnrollmentId) {
-        return this._mcmClientDFSPCertModel.signInboundEnrollment({
+    async getClientCertificate(inboundEnrollmentId) {
+        return this._mcmClientDFSPCertModel.getClientCertificate({
             envId : this._envId,
             inboundEnrollmentId
         });
@@ -133,19 +133,21 @@ class CertificatesModel {
     }
 
     async exchangeOutboundSdkConfiguration(inboundEnrollmentId, key) {
+        let exchanged = false;
+        const inboundEnrollment = await this.getClientCertificate(inboundEnrollmentId);
+        this._logger.push({inboundEnrollment}).log('inboundEnrollment');
+        if(inboundEnrollment.state === 'CERT_SIGNED'){
+            //retrieve hub CA 
+            const rootHubCA = await this._certificateModel.getRootHubCA({
+                envId : this._envId
+            });
+            this._logger.push({cert: rootHubCA.certificate}).log('hubCA');
 
-        const inboundEnrollmentSigned = await this.signInboundEnrollment(inboundEnrollmentId);
-        // FIXME: Check inboundEnrollmentSigned.state === CERT_SIGNED
-        this._logger.push({inboundEnrollmentSigned}).log('inboundEnrollmentSigned');
-    
-        //retrieve hub CA 
-        const rootHubCA = await this._certificateModel.getRootHubCA({
-            envId : this._envId
-        });
-        this._logger.push({cert: rootHubCA.certificate}).log('hubCA');
-
-        console.log('exchangeInboundSdkConfiguration :: ');
-        await this._connectorModel.reconfigureOutboundSdk(rootHubCA.certificate, key, inboundEnrollmentSigned.certificate);
+            console.log('exchangeInboundSdkConfiguration :: ');
+            await this._connectorModel.reconfigureOutboundSdk(rootHubCA.certificate, key, inboundEnrollment.certificate);
+            exchanged = true;
+        }
+        return exchanged;
     }    
 
     /**

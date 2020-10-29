@@ -10,6 +10,7 @@
 
 const { DFSPCertificateModel, HubCertificateModel, HubEndpointModel, AuthModel, ConnectorModel } = require('@modusbox/mcm-client');
 const { EmbeddedPKIEngine } = require('mojaloop-connection-manager-pki-engine');
+const CertificatesModel = require('./CertificatesModel');
 const util = require('util');
 
 const DEFAULT_REFRESH_INTERVAL = 60;
@@ -30,6 +31,10 @@ class MCMStateModel {
         this._dfspCertificateModel = new DFSPCertificateModel(opts);
         this._hubCertificateModel = new HubCertificateModel(opts);
         this._hubEndpointModel = new HubEndpointModel(opts);
+        this._certificatesModel =  new CertificatesModel({
+            ...opts,
+            mcmServerEndpoint:opts.hubEndpoint
+        });
         this._refreshIntervalSeconds = parseInt(opts.refreshIntervalSeconds) > 0 ?
             opts.refreshIntervalSeconds : DEFAULT_REFRESH_INTERVAL;
         this._storage = opts.storage;
@@ -43,6 +48,7 @@ class MCMStateModel {
 
         this._authModel = new AuthModel(opts);
         this._connectorModel = new ConnectorModel(opts);
+        this._db = opts.db;
     }
 
     async _refresh() {
@@ -62,7 +68,8 @@ class MCMStateModel {
             ));
 
             await this.csrExchangeProcess();
-            
+
+            await this.clientCertificateExchangeProcess();
 
             const hubEndpoints = await this._hubEndpointModel.findAll({ envId: this._envId, state: 'CONFIRMED' });
             await this._storage.setSecret('hubEndpoints', JSON.stringify(hubEndpoints));
@@ -70,6 +77,26 @@ class MCMStateModel {
         catch(err) {
             this._logger.log(`Error refreshing MCM state model: ${err.stack || util.inspect(err)}`);
             //note: DONT throw at this point or we will crash our parent process!
+        }
+    }
+
+    async clientCertificateExchangeProcess(){
+        const cache = this._db.redisCache;
+        const inboundEnrollmentId = await cache.get(`inboundEnrollmentId_${this._envId}`);
+        this._logger.log(`inboundEnrollmentId:: ${inboundEnrollmentId}`);
+        if(inboundEnrollmentId){
+            const bufferPK = await cache.get(`privateKey_${this._envId}`);
+            const pk = bufferPK.toString('utf8');
+            console.log('pk::', pk);
+
+            try {
+                const wasExchanged = await this._certificatesModel.exchangeOutboundSdkConfiguration(inboundEnrollmentId, pk);
+                if(wasExchanged){
+                    await cache.del(`inboundEnrollmentId_${this._envId}`);
+                }
+            } catch(err){
+                this._logger.log(`Error refreshing client certificate: ${err.stack || util.inspect(err)}`);
+            }
         }
     }
 
