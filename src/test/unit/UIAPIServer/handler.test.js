@@ -18,7 +18,7 @@ describe('create dfsp csr and upload to mcm', () => {
         };
 
         const createdCsrMock = { key: 'mocked', csr: 'mocked'};
-        
+
         const context =  {
             'state': {
                 'conf': {
@@ -34,6 +34,12 @@ describe('create dfsp csr and upload to mcm', () => {
                             // this is too verbose
                             // console.log(obj, msg);
                         }};
+                    }
+                },
+                db:{
+                    redisCache: {
+                        set: () => {},
+                        get: () => {}
                     }
                 }
             },
