@@ -14,11 +14,10 @@ jest.mock('dotenv', () => ({
     config: jest.fn()
 }));
 
-const index = require('../../index.js');
-
 
 describe('index.js', () => {
     test.skip('Exports expected modules', () => {
+        const index = require('../../index.js');
         expect(typeof(index.Server)).toBe('function');
         expect(typeof(index.UIAPIServerMiddleware)).toBe('object');
         expect(typeof(index.Router)).toBe('function');
