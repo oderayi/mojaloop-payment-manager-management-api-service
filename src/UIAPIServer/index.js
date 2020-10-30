@@ -79,7 +79,8 @@ class UIAPIServer {
             tlsServerPrivateKey: this._conf.tlsServerPrivateKey,
             dfspCaPath: this._conf.dfspCaPath,
             auth: this._conf.auth,
-            wsUrl: this._conf.wsUrl
+            wsUrl: this._conf.wsUrl,
+            db: this._db
         });
 
         return this._server;

@@ -126,6 +126,23 @@ class Cache {
     }
 
     /**
+     * Delete a key
+     * 
+     * @param {string} key 
+     */
+    async del(key) {
+        return new Promise((resolve, reject) => {
+            this._client.del(key, (err, value) => {
+                if (err) {
+                    this._logger.push({ key, err }).log(`Error deleting cache key: ${key}`);
+                    return reject(err);
+                }
+                return resolve(value);
+            });
+        });
+    }  
+
+    /**
      * Gets keys from the cache based on the pattern
      *
      * @param pattern {string} - keys pattern

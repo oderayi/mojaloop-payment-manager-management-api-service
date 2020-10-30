@@ -247,6 +247,12 @@ const createClientCSR = async(ctx) => {
 
     const createdCSR = await certModel.createCSR(csrParameters);
     ctx.body = await certModel.uploadClientCSR(createdCSR.csr);
+
+    // save the enrollment id in the cache to process later
+    const cache = ctx.state.db.redisCache;
+    await cache.set(`inboundEnrollmentId_${ctx.params.envId}`, ctx.body.id);
+    // FIXME: aslo persist the private key (in the future will be in Vault)
+    await cache.set(`privateKey_${ctx.params.envId}`, Buffer.from(createdCSR.key, 'utf-8'));
 };
 
 const getClientCertificates = async(ctx) => {
