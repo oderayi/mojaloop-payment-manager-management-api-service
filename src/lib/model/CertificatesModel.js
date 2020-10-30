@@ -143,7 +143,6 @@ class CertificatesModel {
             });
             this._logger.push({cert: rootHubCA.certificate}).log('hubCA');
 
-            console.log('exchangeInboundSdkConfiguration :: ');
             await this._connectorModel.reconfigureOutboundSdk(rootHubCA.certificate, key, inboundEnrollment.certificate);
             exchanged = true;
         }
