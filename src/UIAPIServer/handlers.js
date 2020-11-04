@@ -216,7 +216,7 @@ const deleteDFSPEndpoint = async(ctx) => {
 };
 
 const getHubEndpoints = async(ctx) => {
-    const { direction, type, state } = ctx.query;
+    const { direction, state } = ctx.query;
     const { dfspId, mcmServerEndpoint } = ctx.state.conf;
     const hub = new Hub({
         dfspId,
@@ -224,7 +224,7 @@ const getHubEndpoints = async(ctx) => {
         envId: ctx.params.envId,
         logger: ctx.state.logger,
     });
-    ctx.body = await hub.getEndpoints({ direction, type, state });
+    ctx.body = await hub.getEndpoints({ direction, state });
 };
 
 const uploadClientCSR = async(ctx) => {
