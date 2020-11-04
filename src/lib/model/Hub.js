@@ -8,7 +8,7 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                   *
  **************************************************************************/
 
-const { HubEndpointModel,HubCertificateModel } = require('@modusbox/mcm-client');
+const { HubEndpointModel,HubCertificateModel, EnvironmentModel } = require('@modusbox/mcm-client');
 
 class Hub {
     constructor(opts) {
@@ -22,6 +22,10 @@ class Hub {
         });
         this._certificateModel = new HubCertificateModel({
             dfspId: opts.dfspId,
+            logger: opts.logger,
+            hubEndpoint: opts.mcmServerEndpoint,
+        });
+        this._environmentModel = new EnvironmentModel({
             logger: opts.logger,
             hubEndpoint: opts.mcmServerEndpoint,
         });
@@ -40,6 +44,13 @@ class Hub {
             ...opts,
         });
     }
+
+    /**
+     *  Get all environments
+     */
+    async getEnvironments() {
+        return this._environmentModel.findAll();
+    }    
 
     /**
      * Gets Hub CAs
