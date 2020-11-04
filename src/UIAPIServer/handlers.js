@@ -134,6 +134,18 @@ const getAllDfsps = async(ctx) => {
 };
 
 
+const getAllEnvironments = async(ctx) => {
+    const { mcmServerEndpoint } = ctx.state.conf;
+    
+    const HubModel = new Hub({
+        mcmServerEndpoint,
+        logger: ctx.state.logger,
+    });
+    
+    ctx.response.status = 200;
+    const responseData = await HubModel.getEnvironments();
+    ctx.body = responseData;
+};
 
 const getDFSPSByMonetaryZone = async(ctx) => {
     const { envId, dfspId, mcmServerEndpoint } = ctx.state.conf;
@@ -480,6 +492,9 @@ module.exports = {
     },
     '/dfsp': {
         get: getDFSPDetails,
+    },
+    '/environments': {
+        get: getAllEnvironments,
     },
     '/environments/{envId}/dfsp/endpoints': {
         get: getDFSPEndpoints,

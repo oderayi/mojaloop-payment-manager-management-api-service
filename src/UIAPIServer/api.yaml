@@ -479,6 +479,22 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Balances'
+
+  /environments:
+    get:
+      tags:
+      - "env-dfsp-config"
+      summary: "Returns all the environments"
+      responses:
+        200:
+          description: "successful operation"        
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Environment"  
+
   /environments/{envId}/dfsp/servercerts:
     parameters:
       - name: envId
@@ -1195,6 +1211,23 @@ components:
           $ref: '#/components/schemas/Amount'
         timestamp:
           $ref: '#/components/schemas/Timestamp'
+
+    Environment:
+      type: "object"
+      required:
+        - "name"
+        - "id"
+      properties:
+        id:
+          type: integer
+          description: "Object ID"
+        name:
+          type: "string"
+          description: "Dev, test, pre-prod, etc"
+      example:
+        id: 42
+        name: "DEV"
+
     HubCAInfoInput:
       type: "object"
       description: "Hub CA Input Body"
