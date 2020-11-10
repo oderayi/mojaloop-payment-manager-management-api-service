@@ -13,10 +13,16 @@ paths:
         200:
           description: Returns empty body if the scheme adapter outbound transfers service is running.
 
-  /dfsp:
+  /environments/{envId}/dfsp:
     get:
       summary: Provide details of FSP based on the ID
-      operationId: getFSPDetails
+      parameters:
+        - name: envId
+          in: path
+          description: ID of environment
+          required: true
+          schema:
+            type: string      
       responses:
         200:
           description: successful operation
