@@ -490,7 +490,7 @@ module.exports = {
     '/balances': {
         get: getBalances,
     },
-    '/dfsp': {
+    '/environments/{envId}/dfsp': {
         get: getDFSPDetails,
     },
     '/environments': {
