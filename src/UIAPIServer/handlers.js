@@ -112,9 +112,9 @@ const getBalances = async(ctx) => {
 };
 
 const getDFSPDetails = async(ctx) => {
-    const { envId, dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
     const dfsp = new DFSP({
-        envId,
+        envId: ctx.params.envId,
         dfspId,
         mcmServerEndpoint,
         logger: ctx.state.logger,
@@ -123,9 +123,9 @@ const getDFSPDetails = async(ctx) => {
 };
 
 const getAllDfsps = async(ctx) => {
-    const { envId, dfspId, mcmServerEndpoint } = ctx.state.conf;
+    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
     const dfsp = new DFSP({
-        envId,
+        envId: ctx.params.envId,
         dfspId,
         mcmServerEndpoint,
         logger: ctx.state.logger,
@@ -490,7 +490,7 @@ module.exports = {
     '/balances': {
         get: getBalances,
     },
-    '/dfsp': {
+    '/environments/{envId}/dfsp': {
         get: getDFSPDetails,
     },
     '/environments': {

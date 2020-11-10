@@ -69,7 +69,6 @@ module.exports = {
     mcmClientSecretsLocation: env.get('MCM_CLIENT_SECRETS_LOCATION').required().asString(),
     tlsServerPrivateKey: env.get('TLS_SERVER_PRIVATE_KEY').required().asString(),
     dfspId: env.get('DFSP_ID').required().asString(),
-    envId: env.get('ENV_ID').required().asString(),
     privateKeyLength: env.get('PRIVATE_KEY_LENGTH').default(4096).asIntPositive(),
     privateKeyAlgorithm: env.get('PRIVATE_KEY_ALGORITHM').default('rsa').asString(),
     dfspClientCsrParameters: env.get('DFSP_CLIENT_CSR_PARAMETERS').asJsonConfig(),
