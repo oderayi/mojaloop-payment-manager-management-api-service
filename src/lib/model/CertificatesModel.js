@@ -123,9 +123,17 @@ class CertificatesModel {
             this._logger.log('Certificate created and signed :: ', cert);
 
             //key generated with csr is encrypted
-            const decryptedCsrPrivateKey = await embeddedPKIEngine.decryptKey(csr.key);
+            try {
+                const decryptedCsrPrivateKey = await embeddedPKIEngine.decryptKey(csr.key);
+                this._logger.log('private key was decrypted :: ', decryptedCsrPrivateKey);
+                await this._connectorModel.reconfigureInboundSdk(decryptedCsrPrivateKey, cert, dfspCA);
 
-            await this._connectorModel.reconfigureInboundSdk(decryptedCsrPrivateKey, cert, dfspCA);
+            } catch (error) {
+                this._logger.log('Error decrypting or reconfiguring inbound sdk', error);
+                throw error;
+
+            }
+
 
         } else {
             throw new Error('Not signing dfsp own csr since dfsp CA  certificate is null or empty');
