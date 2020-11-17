@@ -6,6 +6,9 @@
  *                                                                        *
  *  ORIGINAL AUTHOR:                                                      *
  *       Murthy Kakarlamudi - murthy@modusbox.com                         *
+ *                                                                        *
+ *  CONTRIBUTORS:                                                         *
+ *       Juan Correa - juan.correa@modusbox.com                           *
  **************************************************************************/
 
 const Transfer = require('./Transfer');
@@ -16,8 +19,10 @@ const CertificatesModel = require('./CertificatesModel');
 const MonetaryZone = require('./MonetaryZone');
 const Storage = require('./Storage');
 const MCMStateModel = require('./MCMStateModel');
+const EnvironmentStatusModel = require('./EnvironmentStatusModel');
 
 module.exports = {
+    EnvironmentStatusModel,
     Transfer,
     Balances,
     DFSP,
