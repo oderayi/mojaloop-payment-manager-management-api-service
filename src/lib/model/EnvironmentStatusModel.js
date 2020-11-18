@@ -34,49 +34,9 @@ class EnvironmentStatusModel {
      */
     async findOne(envId) {
 
-        //  let envStatus = [
-        //   {
-        //     phase: 'BUSINESS_SETUP',
-        //     steps: [
-        //       {
-        //         identifier: 'ID_GENERATION',
-        //         status: 'IN_PROGRESS',
-        //       }
-        //     ]
-        //   },
-        //   {
-        //     phase: 'TECNICAL_SETUP',
-        //     steps: [
-        //       {
-        //         identifier: 'ENDPOINTS',
-        //         status: 'COMPLETED',
-        //       },
-        //       {
-        //         identifier: 'CSR_EXCHANGE',
-        //         status: 'COMPLETED'
-        //       },
-        //       {
-        //         identifier: 'CERTIFICATE_AUTHORITY',
-        //         status: 'COMPLETED'
-        //       },
-        //       {
-        //         identifier: 'SERVER_CERTIFICATES_EXCHANGE',
-        //         status: 'COMPLETED'
-        //       },
-        //       {
-        //         identifier: 'JWS_CERTIFICATES',
-        //         status: 'COMPLETED'
-        //       }
-        //     ]
-        //   }
-        //  ];
-
         let envStatus = this._mcmDFSPEnvConfigModel.findStatus({
             envId : envId
         });
-
-        console.log('returned envStatus:');
-        console.log(JSON.stringify(envStatus));
 
         return envStatus;
     }

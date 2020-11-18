@@ -844,7 +844,7 @@ paths:
                   $ref: "#/components/schemas/DFSPDetails"
   /environments/{envId}/status:
     get:
-      summary: Retrieves environment status with Connection Wizard UI phase and step completion status
+      summary: Retrieves environment status
       operationId: getEnvStatus
       parameters:
         - name: envId
