@@ -264,7 +264,7 @@ const createClientCSR = async(ctx) => {
     const cache = ctx.state.db.redisCache;
     await cache.set(`inboundEnrollmentId_${ctx.params.envId}`, ctx.body.id);
     // FIXME: aslo persist the private key (in the future will be in Vault)
-    await cache.set(`privateKey_${ctx.params.envId}`, Buffer.from(createdCSR.key, 'utf-8'));
+    await cache.set(`clientPrivateKey_${ctx.params.envId}`, Buffer.from(createdCSR.key, 'utf-8'));
 };
 
 const getClientCertificates = async(ctx) => {
@@ -440,7 +440,8 @@ const generateAllCerts = async(ctx) => {
         logger: ctx.state.logger,
         storage: ctx.state.storage,
         wsUrl: wsUrl,
-        wsPort: wsPort
+        wsPort: wsPort,
+        db: ctx.state.db
     });
 
     const csrParameters = {

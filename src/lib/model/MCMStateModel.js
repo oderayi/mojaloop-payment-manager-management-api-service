@@ -85,7 +85,7 @@ class MCMStateModel {
         const inboundEnrollmentId = await cache.get(`inboundEnrollmentId_${this._envId}`);
         this._logger.log(`inboundEnrollmentId:: ${inboundEnrollmentId}`);
         if(inboundEnrollmentId){
-            const bufferPK = await cache.get(`privateKey_${this._envId}`);
+            const bufferPK = await cache.get(`clientPrivateKey_${this._envId}`);
             const pk = bufferPK.toString('utf8');
             console.log('pk::', pk);
 
@@ -135,7 +135,12 @@ class MCMStateModel {
 
     async signCsrAndCreateCertificate(csr) {
         const dfspCA = await this._storage.getSecret(this._dfspCaPath);
-        const tlsServerPrivateKey = await this._storage.getSecretAsString(this._tlsServerPrivateKey);
+
+        const cache = this._db.redisCache;
+
+        const serverPK = await cache.get(`serverPrivateKey_${this._envId}`);
+        const tlsServerPrivateKey = serverPK.key;
+        this._logger.log('server pk::', tlsServerPrivateKey);
 
         if (dfspCA) {
             const embeddedPKIEngine = new EmbeddedPKIEngine(dfspCA, tlsServerPrivateKey);
