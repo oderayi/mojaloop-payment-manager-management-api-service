@@ -32,6 +32,19 @@ describe('MCMState Model:', () => {
         }
     }
 
+
+    class Cache {
+        constructor() {}
+
+        get() {
+            return '';
+        }
+    }
+
+    const mockCache = new Cache();
+
+    const mockDB = {redisCache: mockCache};
+
     afterEach( () => {
         jest.clearAllMocks();
     });
@@ -48,6 +61,7 @@ describe('MCMState Model:', () => {
                 refreshIntervalSeconds: 1000,
                 storage: storage,
                 logger: logger,
+                db: mockDB
             });
 
             const getCertificatesSpy = jest.spyOn(HubCertificateModel.prototype, 'getCertificates')
@@ -80,6 +94,7 @@ describe('MCMState Model:', () => {
                 refreshIntervalSeconds: 1000,
                 storage: storage,
                 logger: logger,
+                db: mockDB
             });
 
             const getCertificatesSpy = jest.spyOn(HubCertificateModel.prototype, 'getCertificates')
@@ -111,6 +126,7 @@ describe('MCMState Model:', () => {
                 refreshIntervalSeconds: 1000,
                 storage: storage,
                 logger: logger,
+                db: mockDB
             });
 
             const getCertificatesSpy = jest.spyOn(HubCertificateModel.prototype, 'getCertificates')
@@ -141,7 +157,8 @@ describe('MCMState Model:', () => {
                 hubEndpoint: 'localhost',
                 refreshIntervalSeconds: 1000,
                 storage: storage,
-                logger: logger
+                logger: logger,
+                db: mockDB
 
             });
 

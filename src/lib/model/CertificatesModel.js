@@ -19,6 +19,7 @@ class CertificatesModel {
         this._storage = opts.storage;
         this._wsUrl = opts.wsUrl;
         this._wsPort = opts.wsPort;
+        this._db = opts.db;
 
         this._mcmClientDFSPCertModel = new DFSPCertificateModel({
             dfspId: opts.dfspId,
@@ -125,7 +126,13 @@ class CertificatesModel {
             //key generated with csr is encrypted
             try {
                 const decryptedCsrPrivateKey = await embeddedPKIEngine.decryptKey(csr.key);
-                this._logger.log('private key was decrypted :: ', decryptedCsrPrivateKey);
+                this._logger.log('private key was decrypted :: ');
+
+                //Save in redis decrypted private key
+                // FIXME: (in the future will be in Vault)
+                const cache = this._db.redisCache;
+                await cache.set(`serverPrivateKey_${this._envId}`, {key: decryptedCsrPrivateKey});
+
                 await this._connectorModel.reconfigureInboundSdk(decryptedCsrPrivateKey, cert, dfspCA);
 
             } catch (error) {
