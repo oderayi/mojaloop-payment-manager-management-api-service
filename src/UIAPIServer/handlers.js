@@ -9,7 +9,6 @@
  **************************************************************************/
 
 const {
-    EnvironmentStatusModel,
     Transfer,
     Balances,
     DFSP,
@@ -23,15 +22,17 @@ const healthCheck = async(ctx) => {
     ctx.body = JSON.stringify({'status':'ok'});
 };
 
-const getEnvStatus = async (ctx) => {
+const getEnvironmentDfspStatus = async (ctx) => {
     const envId = ctx.params.envId;
+    const dfspId = ctx.params.dfspId;
     const { mcmServerEndpoint } = ctx.state.conf;
-    const environmentStatusModel = new EnvironmentStatusModel({
+    const dfsp = new DFSP({
         envId: ctx.params.envId,
+        dfspId: ctx.params.dfspId,
         logger: ctx.state.logger,
         mcmServerEndpoint
     });
-    ctx.body = await environmentStatusModel.findOne(envId);
+    ctx.body = await dfsp.getEnvironmentDfspStatus(envId, dfspId);
 };
 
 const getTransfers = async (ctx) => {
@@ -475,8 +476,8 @@ module.exports = {
     '/health': {
         get: healthCheck
     },
-    '/environments/{envId}/status': {
-        get: getEnvStatus,
+    '/environments/{envId}/dfsps/{dfspId}/status': {
+        get: getEnvironmentDfspStatus,
     },
     '/transfers': {
         get: getTransfers,
