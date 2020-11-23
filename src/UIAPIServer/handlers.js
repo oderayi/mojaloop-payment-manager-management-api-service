@@ -14,7 +14,8 @@ const {
     DFSP,
     Hub,
     CertificatesModel,
-    MonetaryZone
+    MonetaryZone,
+    Environment
 } = require('@internal/model');
 
 
@@ -26,13 +27,13 @@ const getEnvironmentDfspStatus = async (ctx) => {
     const envId = ctx.params.envId;
     const dfspId = ctx.params.dfspId;
     const { mcmServerEndpoint } = ctx.state.conf;
-    const dfsp = new DFSP({
+    const environment = new Environment({
         envId: ctx.params.envId,
         dfspId: ctx.params.dfspId,
         logger: ctx.state.logger,
         mcmServerEndpoint
     });
-    ctx.body = await dfsp.getEnvironmentDfspStatus(envId, dfspId);
+    ctx.body = await environment.getEnvironmentDfspStatus(envId, dfspId);
 };
 
 const getTransfers = async (ctx) => {

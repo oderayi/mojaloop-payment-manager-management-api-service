@@ -11,6 +11,7 @@
 const Transfer = require('./Transfer');
 const Balances = require('./Balances');
 const DFSP = require('./DFSP');
+const Environment = require('./Environment');
 const Hub = require('./Hub');
 const CertificatesModel = require('./CertificatesModel');
 const MonetaryZone = require('./MonetaryZone');
@@ -21,6 +22,7 @@ module.exports = {
     Transfer,
     Balances,
     DFSP,
+    Environment,
     Hub,
     CertificatesModel,
     MonetaryZone,
