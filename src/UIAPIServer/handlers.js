@@ -22,6 +22,19 @@ const healthCheck = async(ctx) => {
     ctx.body = JSON.stringify({'status':'ok'});
 };
 
+const getEnvironmentDfspStatus = async (ctx) => {
+    const envId = ctx.params.envId;
+    const dfspId = ctx.params.dfspId;
+    const { mcmServerEndpoint } = ctx.state.conf;
+    const dfsp = new DFSP({
+        envId: ctx.params.envId,
+        dfspId: ctx.params.dfspId,
+        logger: ctx.state.logger,
+        mcmServerEndpoint
+    });
+    ctx.body = await dfsp.getEnvironmentDfspStatus(envId, dfspId);
+};
+
 const getTransfers = async (ctx) => {
     const { id, startTimestamp, endTimestamp, institution, status, batchId, limit, offset } = ctx.query;
     const transfer = new Transfer({
@@ -463,6 +476,9 @@ const generateAllCerts = async(ctx) => {
 module.exports = {
     '/health': {
         get: healthCheck
+    },
+    '/environments/{envId}/dfsps/{dfspId}/status': {
+        get: getEnvironmentDfspStatus,
     },
     '/transfers': {
         get: getTransfers,

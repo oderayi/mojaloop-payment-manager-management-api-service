@@ -35,6 +35,21 @@ class DFSP {
 
     /**
      *
+     * @param envId {string}
+     * @param dfspId {string}
+     */
+    async getEnvironmentDfspStatus(envId, dfspId) {
+
+        let environmentDfspStatus = this._mcmDFSPEnvConfigModel.findStatus({
+            envId : envId,
+            dfspId : dfspId
+        });
+
+        return environmentDfspStatus;
+    }
+
+    /**
+     *
      */
     async getDfspDetails() {
         const fspList = await this._mcmDFSPEnvConfigModel.getDFSPList({
