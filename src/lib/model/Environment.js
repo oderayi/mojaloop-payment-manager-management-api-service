@@ -29,10 +29,7 @@ class Environment {
      */
     async getEnvironmentDfspStatus(envId, dfspId) {
 
-        let environmentDfspStatus = this._mcmEnvironmentModel.findStatus({
-            envId : envId,
-            dfspId : dfspId
-        });
+        let environmentDfspStatus = this._mcmEnvironmentModel.findStatus(envId, dfspId);
 
         return environmentDfspStatus;
     }
