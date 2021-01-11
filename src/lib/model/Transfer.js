@@ -74,11 +74,20 @@ class Transfer {
                 transferState: raw.currentState,
                 payerParty: this._convertToTransferParty(raw.from),
                 payeeParty: this._convertToTransferParty(raw.to),
-                getPartiesRequest: { headers: {}, body: {} },
+                getPartiesRequest: {
+                    headers: raw.getPartiesRequest ? raw.getPartiesRequest.headers : undefined,
+                    body: raw.getPartiesRequest ? JSON.parse(raw.getPartiesRequest.body) : undefined,
+                },
                 getPartiesResponse: raw.getPartiesResponse,
-                quoteRequest: { headers: {}, body: {} },
+                quoteRequest: {
+                    headers: raw.quoteRequest ? raw.quoteRequest.headers : undefined,
+                    body: raw.quoteRequest ? JSON.parse(raw.quoteRequest.body) : undefined,
+                },
                 quoteResponse: raw.quoteResponse,
-                transferPrepare: { headers: {}, body: {} },
+                transferPrepare: {
+                    headers: raw.prepare ? raw.prepare.headers : undefined,
+                    body: raw.prepare ? JSON.parse(raw.prepare.body) : undefined,
+                },
                 transferFulfilment: raw.fulfil,
                 lastError: raw.lastError,
             }
