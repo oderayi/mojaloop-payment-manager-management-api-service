@@ -53,10 +53,12 @@ class MCMStateModel {
 
     async _refresh() {
         try {
+            this._logger.log(`starting mcm client refresh`);
             const dfspCerts = await this._dfspCertificateModel.getCertificates({ envId: this._envId, dfpsId: this._dfspId });
             await this._storage.setSecret('dfspCerts', JSON.stringify(
                 dfspCerts.filter(cert => cert.certificate).map(cert => cert.certificate)
             ));
+            this._logger.log(`dfspCerts:: ${JSON.stringify(dfspCerts)}`);
 
             const jwsCerts = await this._dfspCertificateModel.getAllJWSCertificates({ envId: this._envId, dfpsId: this._dfspId });
             await this._storage.setSecret('jwsCerts', JSON.stringify(
@@ -66,6 +68,7 @@ class MCMStateModel {
                     jwsCertificate: cert.jwsCertificate,
                 }))
             ));
+            this._logger.log(`jwsCerts:: ${JSON.stringify(jwsCerts)}`);
 
             await this.csrExchangeProcess();
 
