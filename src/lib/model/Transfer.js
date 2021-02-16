@@ -51,13 +51,37 @@ class Transfer {
         return `${err.httpStatusCode}`;
     }
 
+    _parseRawTransferRequestBodies(transferRaw) {
+        // operate on a copy of incoming object...we dont want side effects
+        const raw = JSON.parse(JSON.stringify(transferRaw));
+
+        if(raw.getPartiesRequest && typeof(raw.getPartiesRequest.body) === 'string') {
+            raw.getPartiesRequest.body = JSON.parse(raw.getPartiesRequest.body);
+        }
+        if(raw.quoteRequest && typeof(raw.quoteRequest.body) === 'string') {
+            raw.quoteRequest.body = JSON.parse(raw.quoteRequest.body);
+        }
+        if(raw.quoteResponse && typeof(raw.quoteResponse.body) === 'string') {
+            raw.quoteResponse.body = JSON.parse(raw.quoteResponse.body);
+        }
+        if(raw.prepare && typeof(raw.prepare.body) === 'string') {
+            raw.prepare.body = JSON.parse(raw.prepare.body);
+        }
+        if(raw.fulfil && typeof(raw.fulfil.body) === 'string') {
+            raw.fulfil.body = JSON.parse(raw.fulfil.body);
+        }
+
+        return raw;
+    }
+
     _convertToApiDetailFormat(transfer) {
-        const raw = JSON.parse(transfer.raw);
+        let raw = JSON.parse(transfer.raw);
+        raw = this._parseRawTransferRequestBodies(raw);
 
         return {
             id: transfer.id,
-            amount: raw.amount,
-            currency: raw.currency,
+            amount: transfer.amount,
+            currency: transfer.currency,
             type: raw.transactionType,
             institution: transfer.dfsp,
             direction: transfer.direction > 0 ? 'OUTBOUND' : 'INBOUND',
@@ -70,23 +94,24 @@ class Transfer {
             technicalDetails: {
                 schemeTransferId: raw.transferId,
                 homeTransferId: raw.homeTransactionId,
-                transactionId: raw.quoteRequest ? raw.quoteRequest.transactionId : '',
+                quoteId: raw.quoteRequest && raw.quoteRequest.body && raw.quoteRequest.body.quoteId,
+                transactionId: raw.quoteRequest && raw.quoteRequest.body && raw.quoteRequest.body.transactionId,
                 transferState: raw.currentState,
-                payerParty: this._convertToTransferParty(raw.from),
-                payeeParty: this._convertToTransferParty(raw.to),
+                payerParty: this._getPartyFromQuoteRequest(raw.quoteRequest, 'payer'),
+                payeeParty: this._getPartyFromQuoteRequest(raw.quoteRequest, 'payee'),
                 getPartiesRequest: {
-                    headers: raw.getPartiesRequest ? raw.getPartiesRequest.headers : undefined,
-                    body: raw.getPartiesRequest ? JSON.parse(raw.getPartiesRequest.body) : undefined,
+                    headers: raw.getPartiesRequest && raw.getPartiesRequest.headers,
+                    body: raw.getPartiesRequest && raw.getPartiesRequest.body,
                 },
                 getPartiesResponse: raw.getPartiesResponse,
                 quoteRequest: {
-                    headers: raw.quoteRequest ? raw.quoteRequest.headers : undefined,
-                    body: raw.quoteRequest ? JSON.parse(raw.quoteRequest.body) : undefined,
+                    headers: raw.quoteRequest && raw.quoteRequest.headers,
+                    body: raw.quoteRequest && raw.quoteRequest.body,
                 },
                 quoteResponse: raw.quoteResponse,
                 transferPrepare: {
-                    headers: raw.prepare ? raw.prepare.headers : undefined,
-                    body: raw.prepare ? JSON.parse(raw.prepare.body) : undefined,
+                    headers: raw.prepare && raw.prepare.headers,
+                    body: raw.prepare && raw.prepare.body,
                 },
                 transferFulfilment: raw.fulfil,
                 lastError: raw.lastError,
@@ -94,6 +119,35 @@ class Transfer {
         };
     }
 
+    _getPartyFromQuoteRequest(qr, partyType) {
+        const p = qr.body[partyType];
+
+        if(!p) {
+            return;
+        }
+
+        return {
+            displayName: p.name,
+            idType: p.partyIdInfo && p.partyIdInfo.partyIdType,
+            idValue: p.partyIdInfo && p.partyIdInfo.partyIdentifier,
+            idSubType: p.partyIdInfo && p.partyIdInfo.partySubIdOrType,
+            displayName: p.name || (p.personalInfo && this._complexNameToDisplayName(p.personalInfo.complexName)),
+            firstName: p.personalInfo && p.personalInfo.complexName && p.personalInfo.complexName.firstName,
+            middleName: p.personalInfo && p.personalInfo.complexName && p.personalInfo.complexName.middleName,
+            lastName: p.personalInfo && p.personalInfo.complexName && p.personalInfo.complexName.lastName,
+            dateOfBirth: p.personalInfo && p.personalInfo.dateOfBirth,
+            merchantClassificationCode: p.merchantClassificationCode,
+            fspId: p.partyIdInfo && p.partyIdInfo.fspId,
+            extensionList: p.extensionList,
+        };
+    }
+
+    _complexNameToDisplayName(p) {
+        if(!p) {
+            return;
+        }
+        return `${p.firstName}${p.middleName ? ' ' + p.middleName : ''} ${p.lastName}`;
+    }
 
     _convertToTransferParty(party) {
         return {
