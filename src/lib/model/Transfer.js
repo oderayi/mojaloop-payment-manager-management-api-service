@@ -127,7 +127,6 @@ class Transfer {
         }
 
         return {
-            displayName: p.name,
             idType: p.partyIdInfo && p.partyIdInfo.partyIdType,
             idValue: p.partyIdInfo && p.partyIdInfo.partyIdentifier,
             idSubType: p.partyIdInfo && p.partyIdInfo.partySubIdOrType,

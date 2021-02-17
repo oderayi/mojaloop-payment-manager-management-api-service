@@ -11,7 +11,6 @@
  *       James Bush - james.bush@modusbox.com                             *
  **************************************************************************/
 
-const util = require('util');
 const knex = require('knex');
 const Cache = require('./cache');
 
