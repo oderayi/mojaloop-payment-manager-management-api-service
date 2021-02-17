@@ -15,6 +15,7 @@
   },
   "amountType": "SEND",
   "currency": "USD",
+  "direction": "OUTBOUND",
   "amount": "100",
   "transactionType": "TRANSFER",
   "note": "test payment",

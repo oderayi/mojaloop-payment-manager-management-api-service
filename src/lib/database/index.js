@@ -130,6 +130,9 @@ async function syncDB({redisCache, db, logger}) {
                 success: getTransferStatus(data),
             };
         }
+        else {
+            logger.push({ data }).log('Unable to process row. No direction property found');
+        }
 
         // logger.push({ ...row, raw: ''}).log('Row processed');
 
