@@ -30,24 +30,27 @@ const getTransferStatus = (data) => {
 };
 
 const getPartyNameFromQuoteRequest = (qr, partyType) => {
-    if(qr && qr.body && qr.body[partyType]) {
-        // use display name if provided
-        if(qr.body[partyType].name) {
-            return qr.body[partyType].name;
+    // return display name if we have it
+    if(qr.body[partyType].name) {
+        return qr.body[partyType].name;
+    }
+
+    // otherwise try to build the name from the personalInfo
+    const { complexName } = qr.body[partyType].personalInfo || {};
+
+    if(complexName) {
+        const n = [];
+        const { firstName, middleName, lastName } = complexName;
+        if(firstName) {
+            n.push(firstName);
         }
-        if(qr.body[partyType].personalInfo && qr.body[partyType].personalInfo.complexName) {
-            let n = [];
-            if(qr.body[partyType].personalInfo.complexName.firstName) {
-                n.push(qr.body[partyType].personalInfo.complexName.firstName);
-            }
-            if(qr.body[partyType].personalInfo.complexName.middleName) {
-                n.push(qr.body[partyType].personalInfo.complexName.middleName);
-            }
-            if(qr.body[partyType].personalInfo.complexName.lastName) {
-                n.push(qr.body[partyType].personalInfo.complexName.lastName);
-            }
-            return n.join(' ');
+        if(middleName) {
+            n.push(middleName);
         }
+        if(lastName) {
+            n.push(lastName);
+        }
+        return n.join(' ');
     }
 };
 
