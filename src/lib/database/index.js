@@ -37,7 +37,17 @@ async function syncDB({redisCache, db, logger}) {
     };
 
     const cacheKey = async (key) => {
-        const data = await redisCache.get(key);
+        const rawData = await redisCache.get(key);
+        let data;
+        if (typeof(rawData) === 'string') {
+            try {
+                data = JSON.parse(rawData);
+            }
+            catch (err) {
+                this._logger.push({ err }).log('Error parsing JSON cache value');
+                
+            }
+        }
 
         // Workaround for *initiatedTimestamp* until SDK populates it in Redis
         // const initiatedTimestamp = new Date(data.initiatedTimestamp).getTime();

@@ -97,6 +97,35 @@ class ConnectorManager {
 
         await client.receive();
     }
+
+    async reconfigureOutboundSdkForJWS(peerJWSPublicKeys) {
+        const logger = this._logger;
+
+        const client = await ControlServer.Client.Create({
+            address: this._wsUrl,
+            port: 4003,
+            logger,
+        });
+
+        await client.send(ControlServer.build.CONFIGURATION.READ());
+        const responseRead = await client.receive();
+
+        const appConfig = responseRead.data;
+
+        const changedConfig = {
+            ...appConfig,
+            outbound: {
+                ...appConfig.outbound,
+                jws: {
+                    peerJWSPublicKeys
+                },
+            },
+        };
+        this._logger.push(changedConfig).log('changed config for JWS');
+        //await client.send(ControlServer.build.CONFIGURATION.PATCH({}, changedConfig));
+
+        //await client.receive();
+    }
 }
 
 module.exports = ConnectorManager;
