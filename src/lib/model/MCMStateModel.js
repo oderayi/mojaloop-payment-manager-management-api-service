@@ -93,11 +93,9 @@ class MCMStateModel {
         this._logger.log(`inboundEnrollmentId:: ${inboundEnrollmentId}`);
         if(inboundEnrollmentId){
             const encryptedClientPvtKey = await cache.get(`clientPrivateKey_${this._envId}`);
-            console.log('encryptedClientPvtKey::', encryptedClientPvtKey);
             const embeddedPKIEngine = new EmbeddedPKIEngine();
             const decryptedClientPvtKey = await embeddedPKIEngine.decryptKey(encryptedClientPvtKey);
-            console.log('decryptedClientPvtKey::', decryptedClientPvtKey);
-
+            
             try {
                 const wasExchanged = await this._certificatesModel.exchangeOutboundSdkConfiguration(inboundEnrollmentId, decryptedClientPvtKey);
                 if(wasExchanged){
