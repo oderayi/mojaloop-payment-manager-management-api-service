@@ -158,10 +158,6 @@ class CertificatesModel {
         const inboundEnrollment = await this.getClientCertificate(inboundEnrollmentId);
         this._logger.push({inboundEnrollment}).log('inboundEnrollment');
         if(inboundEnrollment.state === 'CERT_SIGNED'){
-            //retrieve hub CA 
-            // const rootHubCA = await this._certificateModel.getRootHubCA({
-            //     envId : this._envId
-            // });
             const objHubCA = await this._certificateModel.getHubCAS({
                 envId : this._envId
             });

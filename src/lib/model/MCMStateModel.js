@@ -59,7 +59,7 @@ class MCMStateModel {
             //     dfspCerts.filter(cert => cert.certificate).map(cert => cert.certificate)
             // ));
             this._logger.log(`dfspCerts:: ${JSON.stringify(dfspCerts)}`);
-
+            // Commenting till mutual TLS is working as expected.
             // const jwsCerts = await this._dfspCertificateModel.getAllJWSCertificates({ envId: this._envId, dfpsId: this._dfspId });
             // await this._storage.setSecret('jwsCerts', JSON.stringify(
             //     jwsCerts.map((cert) => ({

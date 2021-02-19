@@ -111,16 +111,6 @@ class Cache {
                     return reject(err);
                 }
 
-                // if (typeof(value) === 'string') {
-                //     try {
-                //         value = JSON.parse(value);
-                //     }
-                //     catch (err) {
-                //         this._logger.push({ err }).log('Error parsing JSON cache value');
-                //         return reject(err);
-                //     }
-                // }
-
                 return resolve(value);
             });
         });
