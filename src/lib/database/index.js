@@ -17,18 +17,47 @@ const Cache = require('./cache');
 const cachedFulfilledKeys = [];
 const cachedPendingKeys = [];
 
+const getName = (userInfo) => userInfo && (userInfo.displayName || `${userInfo.firstName} ${userInfo.lastName}`);
+
+const getTransferStatus = (data) => {
+    if (data.currentState === 'succeeded') {
+        return true;
+    } else if (data.currentState === 'errored') {
+        return false;
+    } else {
+        return null;
+    }
+};
+
+const getPartyNameFromQuoteRequest = (qr, partyType) => {
+    // return display name if we have it
+    if(qr.body[partyType].name) {
+        return qr.body[partyType].name;
+    }
+
+    // otherwise try to build the name from the personalInfo
+    const { complexName } = qr.body[partyType].personalInfo || {};
+
+    if(complexName) {
+        const n = [];
+        const { firstName, middleName, lastName } = complexName;
+        if(firstName) {
+            n.push(firstName);
+        }
+        if(middleName) {
+            n.push(middleName);
+        }
+        if(lastName) {
+            n.push(lastName);
+        }
+        return n.join(' ');
+    }
+};
+
+
+
 async function syncDB({redisCache, db, logger}) {
     logger.log('Syncing cache to in-memory DB');
-    const getName = (userInfo) => userInfo.displayName || `${userInfo.firstName} ${userInfo.lastName}`;
-    const getTransferStatus = (data) => {
-        if (data.currentState === 'succeeded') {
-            return true;
-        } else if (data.currentState === 'errored') {
-            return false;
-        } else {
-            return null;
-        }
-    };
 
     const asyncForEach = async (array, callback) => {
         for (let index = 0; index < array.length; index++) {
@@ -49,28 +78,76 @@ async function syncDB({redisCache, db, logger}) {
             }
         }
 
-        // Workaround for *initiatedTimestamp* until SDK populates it in Redis
-        // const initiatedTimestamp = new Date(data.initiatedTimestamp).getTime();
-        const initiatedTimestamp = data.initiatedTimestamp ? new Date(data.initiatedTimestamp).getTime() : new Date().getTime();
+        // this is all a hack right now as we will eventually NOT use the cache as a source
+        // of truth for transfers but rather some sort of dedicated persistence service instead.
+        // Therefore we can afford to do some nasty things in order to get working features...
+        // for now...
 
-        const completedTimestamp = data.fulfil ? new Date(data.fulfil.body.completedTimestamp) : null;
 
-        const row = {
+        const initiatedTimestamp = data.initiatedTimestamp ? new Date(data.initiatedTimestamp).getTime() : null;
+        const completedTimestamp = data.fulfil ? new Date(data.fulfil.body.completedTimestamp).getTime() : null;
+
+
+        // the cache data model for inbound transfers is lacking some properties that make it easy to extract
+        // certain information...therefore we have to find it elsewhere...
+
+        let row = {
             id: data.transferId,
             redis_key: key, // To be used instead of Transfer.cachedKeys
-            sender: getName(data.from),
-            recipient: getName(data.to),
-            amount: data.amount,
-            currency: data.currency,
-            direction: data.amountType === 'SEND' ? 1 : -1,
-            batch_id: '', // TODO: Implement
-            details: data.note,
-            dfsp: data.to.fspId,
+            raw: JSON.stringify(data),
             created_at: initiatedTimestamp,
             completed_at: completedTimestamp,
-            success: getTransferStatus(data),
-            raw: JSON.stringify(data),
         };
+
+        //logger.push({ data }).log('processing cache item');
+
+        if(data.direction == 'INBOUND') {
+            if(data.quoteResponse && data.quoteResponse.body) {
+                data.quoteResponse.body = JSON.parse(data.quoteResponse.body);
+            }
+            if(data.fulfil && data.fulfil.body) {
+                data.fulfil.body = JSON.parse(data.fulfil.body);
+            }
+
+            row = {
+                ...row,
+                sender: getPartyNameFromQuoteRequest(data.quoteRequest, 'payer'),
+                recipient: getPartyNameFromQuoteRequest(data.quoteRequest, 'payee'),
+                amount: data.quoteResponse && data.quoteResponse.body
+                    && data.quoteResponse.body.transferAmount.amount,
+                currency: data.quoteResponse && data.quoteResponse.body
+                    && data.quoteResponse.body.transferAmount.currency,
+                direction: -1,
+                batch_id: '',
+                details: data.quoteRequest && data.quoteRequest.body
+                    && data.quoteRequest.body.note,
+                dfsp: data.quoteRequest && data.quoteRequest.body
+                    && data.quoteRequest.body.payer
+                    && data.quoteRequest.body.payer.partyIdInfo.fspId,
+
+                success: (data.fulfil && data.fulfil.body && data.fulfil.body.transferState == 'COMMITTED') ? true : null,
+            };
+        }
+
+        if(data.direction == 'OUTBOUND') {
+            row = {
+                ...row,
+                sender: getName(data.from),
+                recipient: getName(data.to),
+                amount: data.amount,
+                currency: data.currency,
+                direction: 1,
+                batch_id: '', // TODO: Implement
+                details: data.note,
+                dfsp: data.to.fspId,
+                success: getTransferStatus(data),
+            };
+        }
+        else {
+            logger.push({ data }).log('Unable to process row. No direction property found');
+        }
+
+        // logger.push({ ...row, raw: ''}).log('Row processed');
 
         const keyIndex = cachedPendingKeys.indexOf(key);
         if (keyIndex === -1) {
