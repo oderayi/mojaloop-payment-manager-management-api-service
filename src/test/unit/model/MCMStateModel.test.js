@@ -73,7 +73,7 @@ describe('MCMState Model:', () => {
             const uploadServerCertificateSpy = jest.spyOn(HubCertificateModel.prototype, 'uploadServerCertificate')
                 .mockImplementation(() => []);
 
-            await mcmState.csrExchangeProcess();
+            await mcmState.dfspClientCertificateExchangeProcess();
 
             expect(getCertificatesSpy).toHaveBeenCalledTimes(1);
             expect(getCertificatesSpy.mock.calls[0][0]).toStrictEqual({ envId: 1 });

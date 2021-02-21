@@ -351,17 +351,6 @@ const getDFSPServerCertificates = async(ctx) => {
     ctx.body = await certModel.getDFSPServerCertificates();
 };
 
-const uploadServerCertificates = async(ctx) => {
-    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
-    const certModel = new CertificatesModel({
-        dfspId,
-        mcmServerEndpoint,
-        envId: ctx.params.envId,
-        logger: ctx.state.logger,
-    });
-    ctx.body = await certModel.uploadServerCertificates(ctx.request.body);
-};
-
 const getAllJWSCertificates = async(ctx) => {
     const { dfspId, mcmServerEndpoint } = ctx.state.conf;
     const certModel = new CertificatesModel({

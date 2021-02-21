@@ -8,7 +8,7 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                   *
  **************************************************************************/
 
-const { DFSPCertificateModel, ConnectorModel, HubCertificateModel } = require('@modusbox/mcm-client');
+const { DFSPCertificateModel, HubCertificateModel } = require('@modusbox/mcm-client');
 const { EmbeddedPKIEngine } = require('mojaloop-connection-manager-pki-engine');
 const ConnectorManager = require('./ConnectorManager');
 const forge = require('node-forge');
