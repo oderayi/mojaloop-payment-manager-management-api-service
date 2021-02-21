@@ -434,7 +434,7 @@ const getMonetaryZones = async(ctx) => {
 const generateAllCerts = async(ctx) => {
     
     const { dfspId, mcmServerEndpoint, privateKeyLength, privateKeyAlgorithm, 
-        dfspServerCsrParameters, dfspCaPath, wsUrl, wsPort } = ctx.state.conf;
+        dfspServerCsrParameters, wsUrl, wsPort } = ctx.state.conf;
 
     const certModel = new CertificatesModel({
         dfspId,
@@ -456,7 +456,7 @@ const generateAllCerts = async(ctx) => {
     const createdCSR = await certModel.createCSR(csrParameters);
 
     //Exchange inbound configuration
-    await certModel.exchangeInboundSdkConfiguration(createdCSR, dfspCaPath);
+    await certModel.uploadClientCSR(createdCSR);
 
     //FIXME: return something relevant when doing https://modusbox.atlassian.net/browse/MP-2135
     ctx.body = '';

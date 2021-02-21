@@ -49,7 +49,7 @@ describe('MCMState Model:', () => {
         jest.clearAllMocks();
     });
 
-    describe('download csr, sign and create certificate, upload it to mcm', () => {
+    describe('download Hub csr, sign and create certificate, upload it to mcm', () => {
 
         test('when outbound enrollment list from mcm comes empty then it does not call upload', async () => {
 
@@ -73,7 +73,7 @@ describe('MCMState Model:', () => {
             const uploadServerCertificateSpy = jest.spyOn(HubCertificateModel.prototype, 'uploadServerCertificate')
                 .mockImplementation(() => []);
 
-            await mcmState.dfspClientCertificateExchangeProcess();
+            await mcmState.hubCSRExchangeProcess();
 
             expect(getCertificatesSpy).toHaveBeenCalledTimes(1);
             expect(getCertificatesSpy.mock.calls[0][0]).toStrictEqual({ envId: 1 });
@@ -106,7 +106,7 @@ describe('MCMState Model:', () => {
             const uploadServerCertificateSpy = jest.spyOn(HubCertificateModel.prototype, 'uploadServerCertificate')
                 .mockImplementation(() => []);
 
-            await mcmState.csrExchangeProcess();
+            await mcmState.hubCSRExchangeProcess();
 
             expect(getCertificatesSpy).toHaveBeenCalledTimes(1);
             expect(getCertificatesSpy.mock.calls[0][0]).toStrictEqual({ envId: 1 });
@@ -138,7 +138,7 @@ describe('MCMState Model:', () => {
             const uploadServerCertificateSpy = jest.spyOn(HubCertificateModel.prototype, 'uploadServerCertificate')
                 .mockImplementation(() => []);
 
-            await mcmState.csrExchangeProcess();
+            await mcmState.hubCSRExchangeProcess();
 
             expect(getCertificatesSpy).toHaveBeenCalledTimes(1);
             expect(getCertificatesSpy.mock.calls[0][0]).toStrictEqual({ envId: 1 });
@@ -171,7 +171,7 @@ describe('MCMState Model:', () => {
             const uploadServerCertificateSpy = jest.spyOn(HubCertificateModel.prototype, 'uploadServerCertificate')
                 .mockImplementation(() => []);
 
-            await mcmState.csrExchangeProcess();
+            await mcmState.hubCSRExchangeProcess();
 
             expect(getCertificatesSpy).toHaveBeenCalledTimes(1);
             expect(getCertificatesSpy.mock.calls[0][0]).toStrictEqual({ envId: 1 });

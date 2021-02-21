@@ -98,16 +98,16 @@ describe('create dfsp csr and upload to mcm', () => {
         const createCSRSpy = jest.spyOn(CertificatesModel.prototype, 'createCSR')
             .mockImplementation(() => { return createdCsrMock; });
 
-        const exchangeInboundSpy = jest.spyOn(CertificatesModel.prototype, 'exchangeInboundSdkConfiguration')
+        const uploadCSRSpy = jest.spyOn(CertificatesModel.prototype, 'uploadClientCSR')
             .mockImplementation(() => { return {ctx: {body: 1}};});
             
         await handlers['/environments/{envId}/dfsp/allcerts'].post(context);
 
         expect(createCSRSpy).toHaveBeenCalledTimes(1);
-        expect(exchangeInboundSpy).toHaveBeenCalledTimes(1);
+        expect(uploadCSRSpy).toHaveBeenCalledTimes(1);
 
         expect(createCSRSpy.mock.calls[0][0]).toStrictEqual(csrParameters);
 
-        expect(exchangeInboundSpy.mock.calls[0][0]).toStrictEqual(createdCsrMock, dfspCaPath);
+        expect(uploadCSRSpy.mock.calls[0][0]).toStrictEqual(createdCsrMock, dfspCaPath);
     });
 });
