@@ -278,7 +278,7 @@ const createClientCSR = async(ctx) => {
     const cache = ctx.state.db.redisCache;
     await cache.set(`inboundEnrollmentId_${ctx.params.envId}`, ctx.body.id);
     // FIXME: aslo persist the private key (in the future will be in Vault)
-    await cache.set(`clientPrivateKey_${ctx.params.envId}`, Buffer.from(createdCSR.key, 'utf-8'));
+    await cache.set(`clientPrivateKey_${ctx.params.envId}`, createdCSR.key.toString('utf8'));
 };
 
 const getClientCertificates = async(ctx) => {
@@ -349,17 +349,6 @@ const getDFSPServerCertificates = async(ctx) => {
         logger: ctx.state.logger,
     });
     ctx.body = await certModel.getDFSPServerCertificates();
-};
-
-const uploadServerCertificates = async(ctx) => {
-    const { dfspId, mcmServerEndpoint } = ctx.state.conf;
-    const certModel = new CertificatesModel({
-        dfspId,
-        mcmServerEndpoint,
-        envId: ctx.params.envId,
-        logger: ctx.state.logger,
-    });
-    ctx.body = await certModel.uploadServerCertificates(ctx.request.body);
 };
 
 const getAllJWSCertificates = async(ctx) => {
@@ -445,6 +434,37 @@ const getMonetaryZones = async(ctx) => {
 const generateAllCerts = async(ctx) => {
     
     const { dfspId, mcmServerEndpoint, privateKeyLength, privateKeyAlgorithm, 
+        dfspServerCsrParameters, wsUrl, wsPort } = ctx.state.conf;
+
+    const certModel = new CertificatesModel({
+        dfspId,
+        mcmServerEndpoint,
+        envId: ctx.params.envId,
+        logger: ctx.state.logger,
+        storage: ctx.state.storage,
+        wsUrl: wsUrl,
+        wsPort: wsPort,
+        db: ctx.state.db
+    });
+
+    const csrParameters = {
+        privateKeyAlgorithm: privateKeyAlgorithm,
+        privateKeyLength: privateKeyLength,
+        parameters: dfspServerCsrParameters
+    };
+
+    const createdCSR = await certModel.createCSR(csrParameters);
+
+    //Exchange inbound configuration
+    await certModel.uploadClientCSR(createdCSR);
+
+    //FIXME: return something relevant when doing https://modusbox.atlassian.net/browse/MP-2135
+    ctx.body = '';
+};
+
+const generateDfspServerCerts = async(ctx) => {
+    
+    const { dfspId, mcmServerEndpoint, privateKeyLength, privateKeyAlgorithm, 
         dfspServerCsrParameters, dfspCaPath, wsUrl, wsPort } = ctx.state.conf;
 
     const certModel = new CertificatesModel({
@@ -467,7 +487,7 @@ const generateAllCerts = async(ctx) => {
     const createdCSR = await certModel.createCSR(csrParameters);
 
     //Exchange inbound configuration
-    await certModel.exchangeInboundSdkConfiguration(createdCSR, dfspCaPath);
+    await certModel.process(createdCSR, dfspCaPath);
 
     //FIXME: return something relevant when doing https://modusbox.atlassian.net/browse/MP-2135
     ctx.body = '';
@@ -530,7 +550,8 @@ module.exports = {
     },
     '/environments/{envId}/dfsp/servercerts': {
         get: getDFSPServerCertificates,
-        post: uploadServerCertificates,
+        // post: uploadServerCertificates,
+        post: generateDfspServerCerts,
     },
     '/environments/{envId}/dfsp/alljwscerts': {
         get: getAllJWSCertificates,

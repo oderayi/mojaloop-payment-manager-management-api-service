@@ -12,8 +12,6 @@
 
 const config = require('./config');
 const UIAPIServer = require('./UIAPIServer');
-const UIAPIServerMiddleware = require('./UIAPIServer/middlewares');
-const RandomPhrase = require('@internal/randomphrase');
 const Log = require('@internal/log');
 
 /**
@@ -73,7 +71,5 @@ if(require.main === module) {
 // scheme adapter as a service
 module.exports = {
     Server: Server,
-    UIAPIServerMiddleware: UIAPIServerMiddleware,
-    RandomPhrase: RandomPhrase,
     Log: Log
 };

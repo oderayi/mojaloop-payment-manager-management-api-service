@@ -8,9 +8,10 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                   *
  **************************************************************************/
 
-const { DFSPCertificateModel, ConnectorModel, HubCertificateModel } = require('@modusbox/mcm-client');
+const { DFSPCertificateModel, HubCertificateModel } = require('@modusbox/mcm-client');
 const { EmbeddedPKIEngine } = require('mojaloop-connection-manager-pki-engine');
-
+const ConnectorManager = require('./ConnectorManager');
+const forge = require('node-forge');
 
 class CertificatesModel {
     constructor(opts) {
@@ -33,7 +34,7 @@ class CertificatesModel {
             hubEndpoint: opts.mcmServerEndpoint,
         });      
 
-        this._connectorModel = new ConnectorModel(opts);
+        this._connectorManager = new ConnectorManager(opts);
     }
 
     async uploadClientCSR(body) {
@@ -115,7 +116,7 @@ class CertificatesModel {
         });
     }
 
-    async exchangeInboundSdkConfiguration(csr, dfspCaPath) {
+    async processDfspServerCerts(csr, dfspCaPath) {
         const dfspCA = await this._storage.getSecret(dfspCaPath);
 
         if (dfspCA) {
@@ -133,7 +134,11 @@ class CertificatesModel {
                 const cache = this._db.redisCache;
                 await cache.set(`serverPrivateKey_${this._envId}`, {key: decryptedCsrPrivateKey});
 
-                await this._connectorModel.reconfigureInboundSdk(decryptedCsrPrivateKey, cert, dfspCA);
+                this._logger.push({dfspCA: dfspCA.toString(), cert: cert}).log('Printing values of DFSP CA and cert');
+
+                await this.uploadServerCertificates({rootCertificate: dfspCA.toString(), serverCertificate: cert});
+                
+                await this._connectorManager.reconfigureInboundSdk(decryptedCsrPrivateKey, cert, dfspCA);
 
             } catch (error) {
                 this._logger.log('Error decrypting or reconfiguring inbound sdk', error);
@@ -149,20 +154,32 @@ class CertificatesModel {
 
     async exchangeOutboundSdkConfiguration(inboundEnrollmentId, key) {
         let exchanged = false;
+        
         const inboundEnrollment = await this.getClientCertificate(inboundEnrollmentId);
         this._logger.push({inboundEnrollment}).log('inboundEnrollment');
         if(inboundEnrollment.state === 'CERT_SIGNED'){
-            //retrieve hub CA 
-            const rootHubCA = await this._certificateModel.getRootHubCA({
+            const objHubCA = await this._certificateModel.getHubCAS({
                 envId : this._envId
             });
-            this._logger.push({cert: rootHubCA.certificate}).log('hubCA');
+            const caChain = `${objHubCA[0].intermediateChain}${objHubCA[0].rootCertificate}`.trim();
+            this._logger.push({cert: caChain }).log('hubCA');
 
-            await this._connectorModel.reconfigureOutboundSdk(rootHubCA.certificate, key, inboundEnrollment.certificate);
+            await this._connectorManager.reconfigureOutboundSdk(caChain, key, inboundEnrollment.certificate);
             exchanged = true;
         }
         return exchanged;
-    }    
+    }   
+    
+    async exchangeJWSConfiguration(jwsCerts) {
+        let peerJWSPublicKeys = {};
+        jwsCerts.forEach(jwsCert => {
+            const keyName = jwsCert.dfspId;
+            const keyValue = forge.pki.publicKeyToPem((forge.pki.certificateFromPem(jwsCert.jwsCertificate.trim().replace(/\\n/g,'\n'))).publicKey);
+            peerJWSPublicKeys[keyName] = keyValue;
+        });
+        this._logger.push({peerJWSPublicKeys}).log('Peer JWS Public Keys');
+        await this._connectorManager.reconfigureOutboundSdkForJWS(JSON.stringify(peerJWSPublicKeys));
+    }
 
     /**
      * Gets uploaded JWS certificate

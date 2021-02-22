@@ -66,7 +66,17 @@ async function syncDB({redisCache, db, logger}) {
     };
 
     const cacheKey = async (key) => {
-        const data = await redisCache.get(key);
+        const rawData = await redisCache.get(key);
+        let data;
+        if (typeof(rawData) === 'string') {
+            try {
+                data = JSON.parse(rawData);
+            }
+            catch (err) {
+                this._logger.push({ err }).log('Error parsing JSON cache value');
+                
+            }
+        }
 
         // this is all a hack right now as we will eventually NOT use the cache as a source
         // of truth for transfers but rather some sort of dedicated persistence service instead.

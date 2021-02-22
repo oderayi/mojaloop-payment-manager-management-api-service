@@ -53,26 +53,33 @@ class MCMStateModel {
 
     async _refresh() {
         try {
+            this._logger.log('starting mcm client refresh');
             const dfspCerts = await this._dfspCertificateModel.getCertificates({ envId: this._envId, dfpsId: this._dfspId });
-            await this._storage.setSecret('dfspCerts', JSON.stringify(
-                dfspCerts.filter(cert => cert.certificate).map(cert => cert.certificate)
-            ));
+            // await this._storage.setSecret('dfspCerts', JSON.stringify(
+            //     dfspCerts.filter(cert => cert.certificate).map(cert => cert.certificate)
+            // ));
+            this._logger.log(`dfspCerts:: ${JSON.stringify(dfspCerts)}`);
+            // Commenting till mutual TLS is working as expected.
+            // const jwsCerts = await this._dfspCertificateModel.getAllJWSCertificates({ envId: this._envId, dfpsId: this._dfspId });
+            // await this._storage.setSecret('jwsCerts', JSON.stringify(
+            //     jwsCerts.map((cert) => ({
+            //         rootCertificate: cert.rootCertificate,
+            //         intermediateChain: cert.intermediateChain,
+            //         jwsCertificate: cert.jwsCertificate,
+            //     }))
+            // ));
+            // this._logger.log(`jwsCerts:: ${JSON.stringify(jwsCerts)}`);
 
-            const jwsCerts = await this._dfspCertificateModel.getAllJWSCertificates({ envId: this._envId, dfpsId: this._dfspId });
-            await this._storage.setSecret('jwsCerts', JSON.stringify(
-                jwsCerts.map((cert) => ({
-                    rootCertificate: cert.rootCertificate,
-                    intermediateChain: cert.intermediateChain,
-                    jwsCertificate: cert.jwsCertificate,
-                }))
-            ));
+            // Exchange Hub CSR 
+            //await this.hubCSRExchangeProcess();
 
-            await this.csrExchangeProcess();
+            // Check if Client certificates are available in Hub 
+            await this.dfspClientCertificateExchangeProcess();
 
-            await this.clientCertificateExchangeProcess();
+            //await this._certificatesModel.exchangeJWSConfiguration(jwsCerts);
 
-            const hubEndpoints = await this._hubEndpointModel.findAll({ envId: this._envId, state: 'CONFIRMED' });
-            await this._storage.setSecret('hubEndpoints', JSON.stringify(hubEndpoints));
+            //const hubEndpoints = await this._hubEndpointModel.findAll({ envId: this._envId, state: 'CONFIRMED' });
+            // await this._storage.setSecret('hubEndpoints', JSON.stringify(hubEndpoints));
         }
         catch(err) {
             this._logger.log(`Error refreshing MCM state model: ${err.stack || util.inspect(err)}`);
@@ -80,17 +87,17 @@ class MCMStateModel {
         }
     }
 
-    async clientCertificateExchangeProcess(){
+    async dfspClientCertificateExchangeProcess(){
         const cache = this._db.redisCache;
         const inboundEnrollmentId = await cache.get(`inboundEnrollmentId_${this._envId}`);
         this._logger.log(`inboundEnrollmentId:: ${inboundEnrollmentId}`);
         if(inboundEnrollmentId){
-            const bufferPK = await cache.get(`clientPrivateKey_${this._envId}`);
-            const pk = bufferPK.toString('utf8');
-            console.log('pk::', pk);
-
+            const encryptedClientPvtKey = await cache.get(`clientPrivateKey_${this._envId}`);
+            const embeddedPKIEngine = new EmbeddedPKIEngine();
+            const decryptedClientPvtKey = await embeddedPKIEngine.decryptKey(encryptedClientPvtKey);
+            
             try {
-                const wasExchanged = await this._certificatesModel.exchangeOutboundSdkConfiguration(inboundEnrollmentId, pk);
+                const wasExchanged = await this._certificatesModel.exchangeOutboundSdkConfiguration(inboundEnrollmentId, decryptedClientPvtKey);
                 if(wasExchanged){
                     await cache.del(`inboundEnrollmentId_${this._envId}`);
                 }
@@ -100,7 +107,7 @@ class MCMStateModel {
         }
     }
 
-    async csrExchangeProcess() {
+    async hubCSRExchangeProcess() {
         const hubCerts = await this.getUnprocessedCerts();
         for (const cert of hubCerts) {
             try {
