@@ -137,7 +137,7 @@ class Transfer {
             dateOfBirth: p.personalInfo && p.personalInfo.dateOfBirth,
             merchantClassificationCode: p.merchantClassificationCode,
             fspId: p.partyIdInfo && p.partyIdInfo.fspId,
-            extensionList: p.extensionList,
+            extensionList: p.partyIdInfo && p.partyIdInfo.extensionList && p.partyIdInfo.extensionList.extension,
         };
     }
 
