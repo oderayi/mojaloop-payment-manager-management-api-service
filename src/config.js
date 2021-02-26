@@ -30,6 +30,9 @@ const env = from(process.env, {
 
 module.exports = {
     dfspId: env.get('DFSP_ID').required().asString(),
+    control: {
+        port: env.get('CONTROL_LISTEN_PORT').default('4005').asPortNumber(),
+    },
     inboundPort: env.get('INBOUND_LISTEN_PORT').default('9000').asPortNumber(),
     logIndent: env.get('LOG_INDENT').default('2').asIntPositive(),
     runMigrations: env.get('RUN_DB_MIGRATIONS').default('true').asBool(),
