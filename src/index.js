@@ -32,7 +32,7 @@ class Server {
         this.uiApiServer = new UIAPIServer(this.conf);
 
         this.controlServer = new ControlServer.Server({
-            port: this.conf.control.port,
+            appConfig: conf,
             logger: this.logger.push(LOG_ID.CONTROL),
         });
     }

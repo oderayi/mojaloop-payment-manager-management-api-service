@@ -26,6 +26,7 @@ const assert = require('assert').strict;
 
 const ws = require('ws');
 const jsonPatch = require('fast-json-patch');
+const forge = require('node-forge');
 
 const randomPhrase = require('@internal/randomphrase');
 
@@ -179,13 +180,16 @@ class Client extends ws {
  * server    - optional HTTP/S server on which to serve the websocket
  *************************************************************************/
 class Server extends ws.Server {
-    constructor({ logger, port = 0, appConfig = {} }) {
-        super({ clientTracking: true, port });
+    constructor({ logger, appConfig = {} }) {
+        super({ clientTracking: true, port: appConfig.control.port });
 
         this._logger = logger;
-        this._port = port;
+        this._port = appConfig.control.port;
         this._appConfig = appConfig;
+        this._appConfig.logger = this._logger;
         this._clientData = new Map();
+
+        this._certificatesModel = new CertificatesModel(appConfig);
 
         this.on('error', err => {
             this._logger.push({ err })
@@ -261,18 +265,10 @@ class Server extends ws.Server {
                 case MESSAGE.CONFIGURATION:
                     switch (msg.verb) {
                         case VERB.READ:
-                            this._appConfig = {
-                                jws: {
-                                    self: {
-                                        publicKey: 'sample',
-                                        privateKey: 'sample'
-                                    },
-                                    peer: {
-                                        payeefsp: 'sample'
-                                    }
-                                }
-                            };
-                            client.send(build.CONFIGURATION.NOTIFY(JSON.stringify(this._appConfig), msg.id));
+                            (async () => {
+                                const jwsCerts = await this.populateConfig();
+                                client.send(build.CONFIGURATION.NOTIFY(jwsCerts , msg.id));
+                            })();
                             break;
                         case VERB.PATCH: {
                             // TODO: validate the incoming patch? Or assume clients have used the
@@ -292,7 +288,43 @@ class Server extends ws.Server {
                     client.send(build.ERROR.NOTIFY.UNSUPPORTED_MESSAGE(msg.id));
                     break;
             }
-        };
+        };   
+    }
+
+    /*
+    * Function that extracts Peer JWS data, Outbound & Inbound TLS details
+    */
+    async populateConfig(){
+
+        const updatedConfig = {};
+
+        // Section to populate Peer JWS Config 
+        let allJWSCerts = await this._certificatesModel.getAllJWSCertificates();
+        let peerKeys = {};
+        allJWSCerts
+            .filter( jwsCert => jwsCert.dfspId !== this._appConfig.dfspId)
+            .forEach( jwsCert => {
+                const keyName = jwsCert.dfspId;
+                const keyValue = this.convertFromCertToKey(jwsCert.jwsCertificate);
+                peerKeys[keyName] = keyValue;
+            });
+        
+        updatedConfig.peerJWSKeys = peerKeys;
+
+        //TODO Section to populate Outbund TLS details
+
+        //TODO Section to populate Inbound TLS details
+
+        return updatedConfig;
+    }
+
+    /*
+    * Utility function to convert from certificate in Pem to public key format
+    */
+    convertFromCertToKey(certPem) {
+        const cert = forge.pki.certificateFromPem(certPem);
+        const publicKeyPem = forge.pki.publicKeyToPem(cert.publicKey);
+        return publicKeyPem;
     }
 }
 

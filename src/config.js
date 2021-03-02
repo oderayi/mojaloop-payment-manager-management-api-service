@@ -30,6 +30,7 @@ const env = from(process.env, {
 
 module.exports = {
     dfspId: env.get('DFSP_ID').required().asString(),
+    envId: env.get('ENV_ID').required().asString(),
     control: {
         port: env.get('CONTROL_LISTEN_PORT').default('4005').asPortNumber(),
     },
