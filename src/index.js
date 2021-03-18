@@ -13,7 +13,7 @@
 const { hostname } = require('os');
 const config = require('./config');
 const UIAPIServer = require('./UIAPIServer');
-const ControlServer = require('./ControlServer');
+const ControlServer = require('./ConnectorManager');
 const Log = require('@internal/log');
 const { Logger } = require('@mojaloop/sdk-standard-components');
 
