@@ -120,7 +120,19 @@ class MCMStateModel {
     }
 
     async start() {
-        await this._authModel.login();
+        let connected = false;
+
+        while(!connected) {
+            try {
+                await this._authModel.login();
+                connected = true;
+            }
+            catch(e) {
+                this._logger.push(e).error('Error authenticating with MCM server. Retrying in 1 second');
+                await new Promise(res => setTimeout(res, 1000));
+            }
+        }
+
         await this._refresh();
         this._timer = setInterval(this._refresh.bind(this), this._refreshIntervalSeconds * 10e3);
     }
