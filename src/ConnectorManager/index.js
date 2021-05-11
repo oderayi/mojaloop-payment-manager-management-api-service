@@ -27,10 +27,10 @@ const assert = require('assert').strict;
 const ws = require('ws');
 const jsonPatch = require('fast-json-patch');
 const forge = require('node-forge');
+const EventEmitter = require('events').EventEmitter;
 
 const randomPhrase = require('@internal/randomphrase');
-
-const {CertificatesModel} = require('@internal/model');
+const CertificatesModel = require('../lib/model/CertificatesModel');
 
 /**************************************************************************
  * The message protocol messages, verbs, and errors
@@ -60,6 +60,18 @@ const EVENT = {
 };
 
 /**************************************************************************
+ * Internal events received by the control server via the exposed internal 
+ * event emitter. 
+ *************************************************************************/
+const INTERNAL_EVENTS = {
+    SERVER: {
+        BROADCAST_JWS_CERTS: 'BROADCAST_JWS_CERTS'
+    },
+    CLIENT: {}
+}
+let internalEventEmitter;
+
+/**************************************************************************
  * Private convenience functions
  *************************************************************************/
 const serialise = JSON.stringify;
@@ -73,7 +85,7 @@ const deserialise = (msg) => {
           v.type === 'Buffer'   &&
           'data' in v           &&
           Array.isArray(v.data)) {
-            return new Buffer(v.data);
+            return Buffer.from(v.data);
         }
         return v;
     });
@@ -165,6 +177,14 @@ class Client extends ws {
             resolve(msg);
         }));
     }
+
+    /**
+    * Register this client instance to receive internal client messages
+    * from other modules.
+    */
+    registerInternalEvents() {
+        // TODO: Register client internal events when they are added to the INTERNAL_EVENTS.CLIENT object defined above. 
+    }
 }
 
 /**************************************************************************
@@ -213,7 +233,6 @@ class Server extends ws.Server {
 
             socket.on('message', this._handle(socket, logger));
         });
-
         this._logger.push(this.address()).log('running on');
     }
 
@@ -326,7 +345,70 @@ class Server extends ws.Server {
         const publicKeyPem = forge.pki.publicKeyToPem(cert.publicKey);
         return publicKeyPem;
     }
+
+    /**
+     * Register this server instance to receive internal server messages
+     * from other modules.
+     */
+    registerInternalEvents() {
+        getInternalEventEmitter().on(INTERNAL_EVENTS.SERVER.BROADCAST_JWS_CERTS, (params) => {
+            this.broadcastJwsCertificates(params);
+        });
+    }
+
+    /**
+     * Broadcast new JWS certificates to all connected clients.
+     * 
+     * @param jwsCerts {object} JWS certificates, as received from the MCM CertificatesModel.
+     */
+    async broadcastJwsCertificates({ jwsCerts }) {
+        const peerKeys = {};
+        jwsCerts
+            .filter( jwsCert => jwsCert.dfspId !== this._appConfig.dfspId)
+            .forEach( jwsCert => {
+                const keyName = jwsCert.dfspId;
+                const keyValue = this.convertFromCertToKey(jwsCert.jwsCertificate);
+                peerKeys[keyName] = keyValue;
+            });
+        const updatedConfig = { peerJWSKeys: peerKeys };
+        const updateConfMsg = build.CONFIGURATION.NOTIFY(updatedConfig);
+        const errorLogger = (socket, message) => (err) =>
+                this._logger
+                    .push({ message, ip: this._clientData.get(socket).ip, err })
+                    .log('Error sending JWS keys notification to client');
+        return await this.broadcast(updateConfMsg, errorLogger);
+    }
+
+    /**
+    * Broadcasts a protocol message to all clients
+    * 
+    * @param {string} msg
+    * @param {object} errorLogger
+    */
+     broadcast(msg, errorLogger) {
+        const sendToAllClients = (msg, errorLogger) => Promise.all(
+            [...this.clients.values()].map((socket) =>
+                (new Promise((resolve) => socket.send(msg, resolve))).catch(errorLogger(socket, msg))
+            )
+        );
+        return sendToAllClients(msg, errorLogger);
+    }
 }
+
+/**************************************************************************
+ * getInternalEventEmitter
+ *
+ * Returns an EventEmmitter that can be used to exchange internal events with 
+ * either the control server or the client from other modules within this service. 
+ * This prevents the need to pass down references to either the server or the client 
+ * from one module to another in order to use their interfaces.
+ * 
+ * @returns {events.EventEmitter}
+ *************************************************************************/
+ const getInternalEventEmitter = () => {
+    internalEventEmitter = internalEventEmitter ? internalEventEmitter : new EventEmitter();
+    return internalEventEmitter;
+ }
 
 module.exports = {
     Client,
@@ -336,4 +418,6 @@ module.exports = {
     VERB,
     ERROR,
     EVENT,
+    getInternalEventEmitter,
+    INTERNAL_EVENTS
 };

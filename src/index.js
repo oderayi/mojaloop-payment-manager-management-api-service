@@ -13,7 +13,7 @@
 const { hostname } = require('os');
 const config = require('./config');
 const UIAPIServer = require('./UIAPIServer');
-const ControlServer = require('./ConnectorManager');
+const ConnectorManager = require('./ConnectorManager');
 const Log = require('@internal/log');
 const { Logger } = require('@mojaloop/sdk-standard-components');
 
@@ -30,15 +30,19 @@ class Server {
         this.conf = conf;
         this.logger = logger;
         this.uiApiServer = new UIAPIServer(this.conf);
-
-        this.controlServer = new ControlServer.Server({
-            appConfig: conf,
-            logger: this.logger.push(LOG_ID.CONTROL),
-        });
+        this.controlServer = null;
     }
 
     async start() {        
-
+        // Start up the control server (websocket server) for communicating with connectors.
+        // We register this instance to receive events from internal modules.
+        // Internal communication with this server is facilitated by its event emitter.
+        // @see `ConnectorManager.getInternalEventEmitter()`
+        this.controlServer = await new ConnectorManager.Server({
+            appConfig: this.conf,
+            logger: this.logger.push(LOG_ID.CONTROL),
+        }),
+        this.controlServer.registerInternalEvents();
         await Promise.all([
             this._startUIAPIServer()
         ]);
@@ -52,7 +56,8 @@ class Server {
 
     stop() {
         return Promise.all([
-            this.uiApiServer.stop()
+            this.uiApiServer.stop(),
+            this.controlServer.stop()
         ]);
     }
 }
@@ -77,6 +82,7 @@ if(require.main === module) {
             console.log('SIGTERM received. Shutting down APIs...');
 
             await svr.stop();
+            // TODO: Raise an event to control server to shut itself down
             process.exit(0);
         });
 

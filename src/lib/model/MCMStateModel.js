@@ -12,6 +12,8 @@ const { DFSPCertificateModel, HubCertificateModel, HubEndpointModel, AuthModel, 
 const { EmbeddedPKIEngine } = require('mojaloop-connection-manager-pki-engine');
 const CertificatesModel = require('./CertificatesModel');
 const util = require('util');
+const ControlServerEventEmitter = require('../../ConnectorManager').getInternalEventEmitter();
+const ControlServerEvents = require('../../ConnectorManager').INTERNAL_EVENTS.SERVER;
 
 const DEFAULT_REFRESH_INTERVAL = 60;
 
@@ -26,6 +28,7 @@ class MCMStateModel {
      * @param opts.envId {string}
      * @param opts.refreshIntervalSeconds {number}
      * @param opts.tlsServerPrivateKey {String}
+     * @param opts.controlServer {ConnectorManager.Server}
      */
     constructor(opts) {
         this._dfspCertificateModel = new DFSPCertificateModel(opts);
@@ -59,16 +62,32 @@ class MCMStateModel {
             //     dfspCerts.filter(cert => cert.certificate).map(cert => cert.certificate)
             // ));
             this._logger.log(`dfspCerts:: ${JSON.stringify(dfspCerts)}`);
-            // Commenting till mutual TLS is working as expected.
-            // const jwsCerts = await this._dfspCertificateModel.getAllJWSCertificates({ envId: this._envId, dfpsId: this._dfspId });
-            // await this._storage.setSecret('jwsCerts', JSON.stringify(
-            //     jwsCerts.map((cert) => ({
-            //         rootCertificate: cert.rootCertificate,
-            //         intermediateChain: cert.intermediateChain,
-            //         jwsCertificate: cert.jwsCertificate,
-            //     }))
-            // ));
-            // this._logger.log(`jwsCerts:: ${JSON.stringify(jwsCerts)}`);
+            
+            const jwsCerts = await this._dfspCertificateModel.getAllJWSCertificates({ envId: this._envId, dfpsId: this._dfspId });
+            const newCertsStr = JSON.stringify(
+                jwsCerts.map((cert) => ({
+                    rootCertificate: cert.rootCertificate,
+                    intermediateChain: cert.intermediateChain,
+                    jwsCertificate: cert.jwsCertificate,
+                }))
+            );
+            // Check if this set of certs differs from the ones in storage. If so, store and broadcast them.
+            let oldJwsCerts = Buffer.from('');
+            try {
+                oldJwsCerts = await this._storage.getSecret('jwsCerts');
+            } catch (err) { /* `jwsCerts` file/record does not exist yet.*/ }
+            
+            if (oldJwsCerts.toString() != newCertsStr && newCertsStr) {
+                // TODO: The next line will through a 'File not found' error if we're using the File storage
+                // because `setStorage` implementation does not create the file if it doesn't exist.
+                await this._storage.setSecret('jwsCerts', newCertsStr);
+                this._logger.log(`jwsCerts:: ${JSON.stringify(jwsCerts)}`);
+                if (Array.isArray(jwsCerts) && jwsCerts.length) {
+                    // Raise an event to the control server to broadcast new JWS certificates to all connected clients.
+                    ControlServerEventEmitter.emit(ControlServerEvents.BROADCAST_JWS_CERTS, { jwsCerts });
+                }
+            }
+            
 
             // Exchange Hub CSR 
             //await this.hubCSRExchangeProcess();
