@@ -69,7 +69,7 @@ const INTERNAL_EVENTS = {
     },
     CLIENT: {}
 }
-let internalEventEmitter;
+const internalEventEmitter = new EventEmitter();
 
 /**************************************************************************
  * Private convenience functions
@@ -359,7 +359,7 @@ class Server extends ws.Server {
     /**
      * Broadcast new JWS certificates to all connected clients.
      * 
-     * @param jwsCerts {object} JWS certificates, as received from the MCM CertificatesModel.
+     * @param jwsCerts {Array} JWS certificates, as received from the MCM CertificatesModel.
      */
     async broadcastJwsCertificates({ jwsCerts }) {
         const peerKeys = {};
@@ -406,7 +406,6 @@ class Server extends ws.Server {
  * @returns {events.EventEmitter}
  *************************************************************************/
  const getInternalEventEmitter = () => {
-    internalEventEmitter = internalEventEmitter ? internalEventEmitter : new EventEmitter();
     return internalEventEmitter;
  }
 
