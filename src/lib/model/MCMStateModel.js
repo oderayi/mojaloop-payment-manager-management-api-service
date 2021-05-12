@@ -71,15 +71,14 @@ class MCMStateModel {
                     jwsCertificate: cert.jwsCertificate,
                 }))
             );
-            // Check if this set of certs differs from the ones in storage. If so, store and broadcast them.
-            let oldJwsCerts = Buffer.from('');
+            // Check if this set of certs differs from the ones in storage. 
+            // If so, store and broadcast them to the connectors.
+            let oldJwsCerts = '';
             try {
-                oldJwsCerts = await this._storage.getSecret('jwsCerts');
+                oldJwsCerts = await this._storage.getSecretAsString('jwsCerts');
             } catch (err) { /* `jwsCerts` file/record does not exist yet.*/ }
             
-            if (oldJwsCerts.toString() != newCertsStr && newCertsStr) {
-                // TODO: The next line will through a 'File not found' error if we're using the File storage
-                // because `setStorage` implementation does not create the file if it doesn't exist.
+            if (oldJwsCerts != newCertsStr && newCertsStr) {
                 await this._storage.setSecret('jwsCerts', newCertsStr);
                 this._logger.log(`jwsCerts:: ${JSON.stringify(jwsCerts)}`);
                 if (Array.isArray(jwsCerts) && jwsCerts.length) {

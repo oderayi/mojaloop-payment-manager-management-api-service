@@ -66,8 +66,7 @@ const EVENT = {
 const INTERNAL_EVENTS = {
     SERVER: {
         BROADCAST_JWS_CERTS: 'BROADCAST_JWS_CERTS'
-    },
-    CLIENT: {}
+    }
 }
 const internalEventEmitter = new EventEmitter();
 
@@ -397,7 +396,7 @@ class Server extends ws.Server {
  * 
  * @returns {events.EventEmitter}
  *************************************************************************/
- const getInternalEventEmitter = () => {
+const getInternalEventEmitter = () => {
     return internalEventEmitter;
  }
 
