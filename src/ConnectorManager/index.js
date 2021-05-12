@@ -53,7 +53,7 @@ const ERROR = {
 };
 
 /**************************************************************************
- * Events emitted by the control server
+ * @deprecated Events emitted by the control server.
  *************************************************************************/
 const EVENT = {
     RECONFIGURE: 'RECONFIGURE',
@@ -176,14 +176,6 @@ class Client extends ws {
             this._logger.push({ msg }).log('Received');
             resolve(msg);
         }));
-    }
-
-    /**
-    * Register this client instance to receive internal client messages
-    * from other modules.
-    */
-    registerInternalEvents() {
-        // TODO: Register client internal events when they are added to the INTERNAL_EVENTS.CLIENT object defined above. 
     }
 }
 
@@ -359,7 +351,7 @@ class Server extends ws.Server {
     /**
      * Broadcast new JWS certificates to all connected clients.
      * 
-     * @param jwsCerts {Array} JWS certificates, as received from the MCM CertificatesModel.
+     * @param {Array} jwsCerts JWS certificates, as received from the MCM CertificatesModel.
      */
     async broadcastJwsCertificates({ jwsCerts }) {
         const peerKeys = {};
@@ -371,7 +363,7 @@ class Server extends ws.Server {
                 peerKeys[keyName] = keyValue;
             });
         const updatedConfig = { peerJWSKeys: peerKeys };
-        const updateConfMsg = build.CONFIGURATION.NOTIFY(updatedConfig);
+        const updateConfMsg = build.CONFIGURATION.PATCH({}, updatedConfig, randomPhrase());
         const errorLogger = (socket, message) => (err) =>
                 this._logger
                     .push({ message, ip: this._clientData.get(socket).ip, err })
@@ -380,18 +372,18 @@ class Server extends ws.Server {
     }
 
     /**
-    * Broadcasts a protocol message to all clients
+    * Broadcasts a protocol message to all connected clients.
     * 
     * @param {string} msg
     * @param {object} errorLogger
     */
-     broadcast(msg, errorLogger) {
+     async broadcast(msg, errorLogger) {
         const sendToAllClients = (msg, errorLogger) => Promise.all(
             [...this.clients.values()].map((socket) =>
                 (new Promise((resolve) => socket.send(msg, resolve))).catch(errorLogger(socket, msg))
             )
         );
-        return sendToAllClients(msg, errorLogger);
+        return await sendToAllClients(msg, errorLogger);
     }
 }
 
