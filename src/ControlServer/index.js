@@ -27,10 +27,12 @@ const assert = require('assert').strict;
 const ws = require('ws');
 const jsonPatch = require('fast-json-patch');
 const forge = require('node-forge');
-const EventEmitter = require('events').EventEmitter;
 
 const randomPhrase = require('@internal/randomphrase');
-const CertificatesModel = require('../lib/model/CertificatesModel');
+const CertificatesModel = require('@internal/model/CertificatesModel');
+const { getInternalEventEmitter, INTERNAL_EVENTS } = require('./events');
+
+const ControlServerEventEmitter = getInternalEventEmitter();
 
 /**************************************************************************
  * The message protocol messages, verbs, and errors
@@ -53,22 +55,11 @@ const ERROR = {
 };
 
 /**************************************************************************
- * @deprecated Events emitted by the control server.
+ * Events emitted by the control server.
  *************************************************************************/
 const EVENT = {
     RECONFIGURE: 'RECONFIGURE',
 };
-
-/**************************************************************************
- * Internal events received by the control server via the exposed internal 
- * event emitter. 
- *************************************************************************/
-const INTERNAL_EVENTS = {
-    SERVER: {
-        BROADCAST_JWS_CERTS: 'BROADCAST_JWS_CERTS'
-    }
-}
-const internalEventEmitter = new EventEmitter();
 
 /**************************************************************************
  * Private convenience functions
@@ -132,51 +123,6 @@ const build = {
     },
 };
 
-/**************************************************************************
- * Client
- *
- * The Control Client. Client for the websocket control API.
- * Used to hot-restart the SDK.
- *
- * logger    - Logger- see SDK logger used elsewhere
- * address   - address of control server
- * port      - port of control server
- *************************************************************************/
-class Client extends ws {
-    constructor({ address = 'localhost', port, logger }) {
-        super(`ws://${address}:${port}`);
-        this._logger = logger;
-    }
-
-    // Really only exposed so that a user can import only the client for convenience
-    get Build() {
-        return build;
-    }
-
-    static async Create(...args) {
-        const result = new Client(...args);
-        await new Promise((resolve, reject) => {
-            result.on('open', resolve);
-            result.on('error', reject);
-        });
-        return result;
-    }
-
-    async send(msg) {
-        const data = typeof msg === 'string' ? msg : serialise(msg);
-        this._logger.push({ data }).log('Sending message');
-        return new Promise((resolve) => super.send.call(this, data, resolve));
-    }
-
-    // Receive a single message
-    async receive() {
-        return new Promise((resolve) => this.once('message', (data) => {
-            const msg = deserialise(data);
-            this._logger.push({ msg }).log('Received');
-            resolve(msg);
-        }));
-    }
-}
 
 /**************************************************************************
  * Server
@@ -243,20 +189,6 @@ class Server extends ws.Server {
             this._appConfig = appConfig;
             this._logger.log('restarted');
         };
-    }
-
-    async notifyClientsOfCurrentConfig() {
-        const updateConfMsg = build.CONFIGURATION.NOTIFY(this._appConfig);
-        const logError = (socket, message) => (err) =>
-            this._logger
-                .push({ message, ip: this._clientData.get(socket).ip, err })
-                .log('Error sending reconfigure notification to client');
-        const sendToAllClients = (msg) => Promise.all(
-            [...this.clients.values()].map((socket) =>
-                (new Promise((resolve) => socket.send(msg, resolve))).catch(logError(socket, msg))
-            )
-        );
-        return await sendToAllClients(updateConfMsg);
     }
 
     _handle(client, logger) {
@@ -342,31 +274,22 @@ class Server extends ws.Server {
      * from other modules.
      */
     registerInternalEvents() {
-        getInternalEventEmitter().on(INTERNAL_EVENTS.SERVER.BROADCAST_JWS_CERTS, (params) => {
-            this.broadcastJwsCertificates(params);
+        ControlServerEventEmitter.on(INTERNAL_EVENTS.SERVER.BROADCAST_CONFIG_CHANGE, (params) => {
+            this.broadcastConfigChange(params);
         });
     }
 
     /**
-     * Broadcast new JWS certificates to all connected clients.
+     * Broadcast configuration change to all connected clients.
      * 
-     * @param {Array} jwsCerts JWS certificates, as received from the MCM CertificatesModel.
+     * @param {object} params Updated configuration
      */
-    async broadcastJwsCertificates({ jwsCerts }) {
-        const peerKeys = {};
-        jwsCerts
-            .filter( jwsCert => jwsCert.dfspId !== this._appConfig.dfspId)
-            .forEach( jwsCert => {
-                const keyName = jwsCert.dfspId;
-                const keyValue = this.convertFromCertToKey(jwsCert.jwsCertificate);
-                peerKeys[keyName] = keyValue;
-            });
-        const updatedConfig = { peerJWSKeys: peerKeys };
+    async broadcastConfigChange(updatedConfig) {
         const updateConfMsg = build.CONFIGURATION.PATCH({}, updatedConfig, randomPhrase());
         const errorLogger = (socket, message) => (err) =>
-                this._logger
-                    .push({ message, ip: this._clientData.get(socket).ip, err })
-                    .log('Error sending JWS keys notification to client');
+            this._logger
+                .push({ message, ip: this._clientData.get(socket).ip, err })
+                .log('Error sending JWS keys notification to client');
         return await this.broadcast(updateConfMsg, errorLogger);
     }
 
@@ -376,7 +299,7 @@ class Server extends ws.Server {
     * @param {string} msg
     * @param {object} errorLogger
     */
-     async broadcast(msg, errorLogger) {
+    async broadcast(msg, errorLogger) {
         const sendToAllClients = (msg, errorLogger) => Promise.all(
             [...this.clients.values()].map((socket) =>
                 (new Promise((resolve) => socket.send(msg, resolve))).catch(errorLogger(socket, msg))
@@ -386,28 +309,11 @@ class Server extends ws.Server {
     }
 }
 
-/**************************************************************************
- * getInternalEventEmitter
- *
- * Returns an EventEmmitter that can be used to exchange internal events with 
- * either the control server or the client from other modules within this service. 
- * This prevents the need to pass down references to either the server or the client 
- * from one module to another in order to use their interfaces.
- * 
- * @returns {events.EventEmitter}
- *************************************************************************/
-const getInternalEventEmitter = () => {
-    return internalEventEmitter;
- }
-
 module.exports = {
-    Client,
     Server,
     build,
     MESSAGE,
     VERB,
     ERROR,
     EVENT,
-    getInternalEventEmitter,
-    INTERNAL_EVENTS
 };

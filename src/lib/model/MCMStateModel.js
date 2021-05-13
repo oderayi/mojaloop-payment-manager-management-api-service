@@ -8,12 +8,10 @@
  *       Yevhen Kyriukha - yevhen.kyriukha@modusbox.com                   *
  **************************************************************************/
 
+const util = require('util');
 const { DFSPCertificateModel, HubCertificateModel, HubEndpointModel, AuthModel, ConnectorModel } = require('@modusbox/mcm-client');
 const { EmbeddedPKIEngine } = require('mojaloop-connection-manager-pki-engine');
 const CertificatesModel = require('./CertificatesModel');
-const util = require('util');
-const ControlServerEventEmitter = require('../../ConnectorManager').getInternalEventEmitter();
-const ControlServerEvents = require('../../ConnectorManager').INTERNAL_EVENTS.SERVER;
 
 const DEFAULT_REFRESH_INTERVAL = 60;
 
@@ -71,8 +69,9 @@ class MCMStateModel {
                     jwsCertificate: cert.jwsCertificate,
                 }))
             );
+
             // Check if this set of certs differs from the ones in storage. 
-            // If so, store and broadcast them to the connectors.
+            // If so, store them then broadcast them to the connectors.
             let oldJwsCerts = '';
             try {
                 oldJwsCerts = await this._storage.getSecretAsString('jwsCerts');
@@ -82,8 +81,7 @@ class MCMStateModel {
                 await this._storage.setSecret('jwsCerts', newCertsStr);
                 this._logger.log(`jwsCerts:: ${JSON.stringify(jwsCerts)}`);
                 if (Array.isArray(jwsCerts) && jwsCerts.length) {
-                    // Raise an event to the control server to broadcast new JWS certificates to all connected clients.
-                    ControlServerEventEmitter.emit(ControlServerEvents.BROADCAST_JWS_CERTS, { jwsCerts });
+                    await this._certificatesModel.exchangeJWSConfiguration(jwsCerts);
                 }
             }
             
@@ -94,7 +92,6 @@ class MCMStateModel {
             // Check if Client certificates are available in Hub 
             await this.dfspClientCertificateExchangeProcess();
 
-            //await this._certificatesModel.exchangeJWSConfiguration(jwsCerts);
 
             //const hubEndpoints = await this._hubEndpointModel.findAll({ envId: this._envId, state: 'CONFIRMED' });
             // await this._storage.setSecret('hubEndpoints', JSON.stringify(hubEndpoints));

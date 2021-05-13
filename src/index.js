@@ -13,7 +13,7 @@
 const { hostname } = require('os');
 const config = require('./config');
 const UIAPIServer = require('./UIAPIServer');
-const ConnectorManager = require('./ConnectorManager');
+const ControlServer = require('./ControlServer');
 const Log = require('@internal/log');
 const { Logger } = require('@mojaloop/sdk-standard-components');
 
@@ -38,7 +38,7 @@ class Server {
         // We register this instance to receive events from internal modules.
         // Internal communication with this server is facilitated by its event emitter.
         // @see `ConnectorManager.getInternalEventEmitter()`
-        this.controlServer = await new ConnectorManager.Server({
+        this.controlServer = await new ControlServer.Server({
             appConfig: this.conf,
             logger: this.logger.push(LOG_ID.CONTROL),
         }),
