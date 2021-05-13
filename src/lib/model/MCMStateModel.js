@@ -75,7 +75,7 @@ class MCMStateModel {
             let oldJwsCerts = '';
             try {
                 oldJwsCerts = await this._storage.getSecretAsString('jwsCerts');
-            } catch (err) { /* `jwsCerts` file/record does not exist yet.*/ }
+            } catch (_) { /* `jwsCerts` file/record does not exist yet.*/ }
             
             if (oldJwsCerts != newCertsStr && newCertsStr) {
                 await this._storage.setSecret('jwsCerts', newCertsStr);

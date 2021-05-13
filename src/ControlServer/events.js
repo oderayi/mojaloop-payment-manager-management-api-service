@@ -8,7 +8,7 @@
  *      Steven Oderayi - steven.oderayi@modusbox.com                       *
  **************************************************************************/
 
-const EventEmitter = require('events').EventEmitter;
+const { EventEmitter } = require('events');
 
 /**************************************************************************
  * Internal events received by the control server via the exposed internal 

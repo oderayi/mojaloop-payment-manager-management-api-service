@@ -11,7 +11,7 @@
  *       Murthy Kakarlamudi - murthy@modusbox.com                   *
  ************************************************************************* */
 
-const {ControlServerEvents, getInternalEventEmitter} = require('../../ControlServer/events');
+const { INTERNAL_EVENTS, getInternalEventEmitter } = require('../../ControlServer/events');
 
 const ControlServerEventEmitter = getInternalEventEmitter();
 
@@ -39,7 +39,7 @@ class ConnectorManager {
                 },
             },
         };
-        ControlServerEventEmitter.emit(ControlServerEvents.SERVER.BROADCAST_CONFIG_CHANGE, changedConfig);
+        ControlServerEventEmitter.emit(INTERNAL_EVENTS.SERVER.BROADCAST_CONFIG_CHANGE, changedConfig);
     }
 
     async reconfigureOutboundSdk(rootHubCA, key, certificate) {
@@ -55,21 +55,16 @@ class ConnectorManager {
                 },
             },
         };
-        ControlServerEventEmitter.emit(ControlServerEvents.SERVER.BROADCAST_CONFIG_CHANGE, changedConfig);
+        ControlServerEventEmitter.emit(INTERNAL_EVENTS.SERVER.BROADCAST_CONFIG_CHANGE, changedConfig);
     }
 
     async reconfigureOutboundSdkForJWS(peerJWSPublicKeys) {
         // Broadcast JWS keys for outbound server to connectors
         const changedConfig = {
             peerJWSKeys: peerJWSPublicKeys,
-            outbound: {
-                jws: {
-                    peerJWSPublicKeys
-                },
-            },
         };
         
-        ControlServerEventEmitter.emit(ControlServerEvents.SERVER.BROADCAST_CONFIG_CHANGE, changedConfig);
+        ControlServerEventEmitter.emit(INTERNAL_EVENTS.SERVER.BROADCAST_CONFIG_CHANGE, changedConfig);
     }
 }
 
