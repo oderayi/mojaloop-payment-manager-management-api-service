@@ -19,8 +19,6 @@ class ConnectorManager {
     constructor(opts) {
         this._storage = opts.storage;
         this._logger = opts.logger;
-        this._wsUrl = opts.wsUrl;
-        this._wsPort = opts.wsPort;
         this._dfspCaPath = opts.dfspCaPath;
         this._tlsServerPrivateKey = opts.tlsServerPrivateKey;
     }

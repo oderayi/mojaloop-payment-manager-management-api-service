@@ -143,7 +143,6 @@ class Server extends ws.Server {
         this._logger = logger;
         this._port = appConfig.control.port;
         this._appConfig = appConfig;
-        this._appConfig.logger = this._logger;
         this._clientData = new Map();
 
         this._certificatesModel = new CertificatesModel(appConfig);
