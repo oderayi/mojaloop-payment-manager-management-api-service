@@ -151,15 +151,11 @@ class Client extends ws {
 
     // Receive a single message
     async receive() {
-        try {
-            return new Promise((resolve) => this.once('message', (data) => {
-                const msg = deserialise(data);
-                this._logger.push({ msg }).log('Received');
-                resolve(msg);
-            }));
-        } catch (err) {
-            console.log(err);
-        }
+        return new Promise((resolve) => this.once('message', (data) => {
+            const msg = deserialise(data);
+            this._logger.push({ msg }).log('Received');
+            resolve(msg);
+        }));
     }
 
     // Close connection 
