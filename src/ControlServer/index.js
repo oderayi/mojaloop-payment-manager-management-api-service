@@ -145,7 +145,7 @@ class Server extends ws.Server {
         this._appConfig = appConfig;
         this._clientData = new Map();
 
-        this._certificatesModel = new CertificatesModel(appConfig);
+        this._certificatesModel = new CertificatesModel({ ...appConfig, logger });
 
         this.on('error', err => {
             this._logger.push({ err })
