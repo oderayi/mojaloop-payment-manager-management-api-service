@@ -22,12 +22,9 @@
 // It expects new configuration to be supplied as an array of JSON patches. It therefore exposes
 // the current configuration to 
 
-const assert = require('assert').strict;
-
 const ws = require('ws');
 const jsonPatch = require('fast-json-patch');
 const forge = require('node-forge');
-
 const randomPhrase = require('@internal/randomphrase');
 const CertificatesModel = require('@internal/model/CertificatesModel');
 const { getInternalEventEmitter, INTERNAL_EVENTS } = require('./events');
@@ -52,13 +49,6 @@ const ERROR = {
     UNSUPPORTED_MESSAGE: 'UNSUPPORTED_MESSAGE',
     UNSUPPORTED_VERB: 'UNSUPPORTED_VERB',
     JSON_PARSE_ERROR: 'JSON_PARSE_ERROR',
-};
-
-/**************************************************************************
- * Events emitted by the control server.
- *************************************************************************/
-const EVENT = {
-    RECONFIGURE: 'RECONFIGURE',
 };
 
 /**************************************************************************
@@ -178,18 +168,6 @@ class Server extends ws.Server {
         this._logger.log('Control server shutdown complete');
     }
 
-    reconfigure({ logger = this._logger, port = 0, appConfig = this._appConfig }) {
-        assert(port === this._port, 'Cannot reconfigure running port');
-        return () => {
-            const reconfigureClientLogger =
-                ({ logger: clientLogger }) => clientLogger.configure(logger);
-            this._clientData.values(reconfigureClientLogger);
-            this._logger = logger;
-            this._appConfig = appConfig;
-            this._logger.log('restarted');
-        };
-    }
-
     _handle(client, logger) {
         return (data) => {
             // TODO: json-schema validation of received message- should be pretty straight-forward
@@ -211,15 +189,6 @@ class Server extends ws.Server {
                                 client.send(build.CONFIGURATION.NOTIFY(jwsCerts , msg.id));
                             })();
                             break;
-                        case VERB.PATCH: {
-                            // TODO: validate the incoming patch? Or assume clients have used the
-                            // client library?
-                            const dup = JSON.parse(JSON.stringify(this._appConfig)); // fast-json-patch explicitly mutates
-                            jsonPatch.applyPatch(dup, msg.data);
-                            logger.push({ oldConf: this._appConfig, newConf: dup }).log('Emitting new configuration');
-                            this.emit(EVENT.RECONFIGURE, dup);
-                            break;
-                        }
                         default:
                             client.send(build.ERROR.NOTIFY.UNSUPPORTED_VERB(msg.id));
                             break;
@@ -314,5 +283,4 @@ module.exports = {
     MESSAGE,
     VERB,
     ERROR,
-    EVENT,
 };
