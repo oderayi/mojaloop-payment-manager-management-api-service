@@ -82,7 +82,6 @@ if(require.main === module) {
             console.log('SIGTERM received. Shutting down APIs...');
 
             await svr.stop();
-            // TODO: Raise an event to control server to shut itself down
             process.exit(0);
         });
 
